@@ -31,8 +31,8 @@ maxOcurr(Max, [H|T], L) :- contaElem(H,[H|T],Count),
                         
 % ------------------------------------------
 % 2: Estafetas que entregaram determinadas encomendas a um determinado cliente.
-estafetasEncomendaCliente([H|T],Cliente,L) :-   solucoes(Encomenda,encomenda(Encomenda,Cliente,_,_,_,_,_,_,_,_,_,_),S),
-                                                verificarLE([H|T],S,L).
+estafetasEncomendaCliente(LE,Cliente,L) :-   solucoes(Encomenda,encomenda(Encomenda,Cliente,_,_,_,_,_,_,_,_,_,_),S),
+                                                verificarLE(LE,S,L).
 
 verificarLE([],_,_).
 verificarLE([H|T],S,L) :- membro(H,S), verificarLE2(H,L,L), verificarLE(T,S,L).
@@ -54,26 +54,21 @@ sum_Lista([X|L], Sum) :-    sum_Lista(L, Sum1),
 
 % ------------------------------------------
 % 5: Zonas com maior volume de entregas por parte da Green Distribution.
-zonaMaisVolume(Max,Zona) :- solucoes(Encomenda, encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_), L),
+zonaMaisVolume(Max,Zona) :- solucoes(Freguesia, encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_), L),
                                sort(0, @<, L, Ls),
-                               encomendaComMaisVolume(Max, Ls, MaxL),
-                               nomeZona(MaxL,Zona).
+                               encomendaComMaisVolume(Max, Ls, Zona).
 
-contaTodosOsVolumes(Encomenda, Sum) :- solucoes(Volume, encomenda(Encomenda,_,Volume), L),
+contaTodosOsVolumes(Freguesia, Sum) :- solucoes(Volume, encomenda(_,_,_,_,Volume,_,Freguesia,_,_,_,_,_), L),
                                        sum_Lista(L,Sum).
 
 encomendaComMaisVolume(0,[],[]).
-encomendaComMaisVolume(Max, [Encomenda], [Encomenda]) :- contaTodosOsVolumes(Encomenda,C), Max = C.
-encomendaComMaisVolume(Max, [Encomenda|T], L) :- contaTodosOsVolumes(Encomenda,Count),
+encomendaComMaisVolume(Max, [Freguesia], [Freguesia]) :- contaTodosOsVolumes(Freguesia,C), Max = C.
+encomendaComMaisVolume(Max, [Freguesia|T], L) :- contaTodosOsVolumes(Freguesia,Count),
                                                 encomendaComMaisVolume(CountMax,T,Ls),
-                                                (Count > CountMax -> Max = Count, L = [Encomenda];
-                                                Count == CountMax -> Max = CountMax, L = [Encomenda|Ls]; 
+                                                (Count > CountMax -> Max = Count, L = [Freguesia];
+                                                Count == CountMax -> Max = CountMax, L = [Freguesia|Ls]; 
                                                 Max = CountMax, L = Ls).
-                                            
-nomeZona([],[]).
-nomeZona([H|T],L):- solucoes((H,Freguesia), pedido(_,_,H,_,_,Freguesia,_,_,_,_,_),[S|_]),
-                    nomeZona(T,Z),
-                    L = [S|Z].                                            
+                                                                                    
 % ------------------------------------------
 % 6: Classificação média de satisfação dos clientes de um determinado estafeta.
 
