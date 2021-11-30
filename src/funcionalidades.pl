@@ -10,8 +10,25 @@
 
 % ------------------------------------------
 % 1: Estafeta que utilizou mais vezes um meio de transporte mais ecológico.
-estafetaEcologico(L) :- solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,1,_),L).
+estafetaEcologico(Elem) :- solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,1,_),L),
+                          maxOcurr(Max, L, Elem).
 
+contaElem(X, [], 0).
+contaElem(X, [X|T], Count) :- contaElem(X, T, Count1), Count is Count1 + 1.
+contaElem(X, [H|T], Count) :- contaElem(X, T, Count).
+
+apagaT(X, [], []).
+apagaT(X, [X|R], L) :- apagaT(X,R,L).
+apagaT(X, [Y|R], [Y|L]) :- X \= Y, apagaT(X,R,L).
+
+maxOcurr(0, [], []).
+maxOcurr(Max, [H|T], L) :- contaElem(H,[H|T],Count),
+                           apagaT(H,[H|T],NewList), 
+                           maxOcurr(NewMax,NewList,Ls),
+                           (Count > NewMax -> Max = Count, L = H;
+                           Max = NewMax, L = Ls), !.
+                        
+                        
 % ------------------------------------------
 % 2: Estafetas que entregaram determinadas encomendas a um determinado cliente.
 estafetasEncomendaCliente([H|T],Cliente,L) :-   solucoes(Encomenda,encomenda(Encomenda,Cliente,_,_,_,_,_,_,_,_,_,_),S),
@@ -37,8 +54,26 @@ sum_Lista([X|L], Sum) :-    sum_Lista(L, Sum1),
 
 % ------------------------------------------
 % 5: Zonas com maior volume de entregas por parte da Green Distribution.
-volumeZonas(L) :- solucoes(Freguesia,encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_), L).
+zonaMaisVolume(Max,Zona) :- solucoes(Encomenda, encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_), L),
+                               sort(0, @<, L, Ls),
+                               encomendaComMaisVolume(Max, Ls, MaxL),
+                               nomeZona(MaxL,Zona).
 
+contaTodosOsVolumes(Encomenda, Sum) :- solucoes(Volume, encomenda(Encomenda,_,Volume), L),
+                                       sum_Lista(L,Sum).
+
+encomendaComMaisVolume(0,[],[]).
+encomendaComMaisVolume(Max, [Encomenda], [Encomenda]) :- contaTodosOsVolumes(Encomenda,C), Max = C.
+encomendaComMaisVolume(Max, [Encomenda|T], L) :- contaTodosOsVolumes(Encomenda,Count),
+                                                encomendaComMaisVolume(CountMax,T,Ls),
+                                                (Count > CountMax -> Max = Count, L = [Encomenda];
+                                                Count == CountMax -> Max = CountMax, L = [Encomenda|Ls]; 
+                                                Max = CountMax, L = Ls).
+                                            
+nomeZona([],[]).
+nomeZona([H|T],L):- solucoes((H,Freguesia), pedido(_,_,H,_,_,Freguesia,_,_,_,_,_),[S|_]),
+                    nomeZona(T,Z),
+                    L = [S|Z].                                            
 % ------------------------------------------
 % 6: Classificação média de satisfação dos clientes de um determinado estafeta.
 
