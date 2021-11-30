@@ -10,11 +10,11 @@
 
 % ------------------------------------------
 % 1: Estafeta que utilizou mais vezes um meio de transporte mais ecológico.
-estafetaEcologico(L) :- solucoes(Estafeta,pedido(_,_,_,Estafeta,_,_,_,_,_,1,_),L).
+estafetaEcologico(L) :- solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,1,_),L).
 
 % ------------------------------------------
 % 2: Estafetas que entregaram determinadas encomendas a um determinado cliente.
-estafetasEncomendaCliente([H|T],Cliente,L) :-   solucoes(Encomenda,pedido(_,Cliente,Encomenda,_,_,_,_,_,_,_,_),S),
+estafetasEncomendaCliente([H|T],Cliente,L) :-   solucoes(Encomenda,encomenda(Encomenda,Cliente,_,_,_,_,_,_,_,_,_,_),S),
                                                 verificarLE([H|T],S,L).
 
 verificarLE([],_,_).
@@ -24,11 +24,11 @@ verificarLE2(X,L,[X|L]).
 
 % ------------------------------------------
 % 3: Clientes servidos por um determinado estafeta.
-clientesEstafeta(L,Estafeta) :- solucoes(Cliente,pedido(_,Cliente,_,Estafeta,_,_,_,_,_,_,_),L).
+clientesEstafeta(L,Estafeta) :- solucoes(Cliente,encomenda(_,Cliente,Estafeta,_,_,_,_,_,_,_,_,_),L).
 
 % ------------------------------------------
 % 4: Valor faturado pela Green Distribution num determinado dia.
-faturaDia(Data,Sum) :-  solucoes(Preco,pedido(_,_,_,_,_,_,Data,_,_,_,Preco), L),
+faturaDia(validaData,Sum) :-  solucoes(Preco,encomenda(_,_,_,_,_,_,_,validaData,_,_,_,Preco), L),
                         sum_Lista(L,Sum).
 
 sum_Lista([], 0).
@@ -37,12 +37,12 @@ sum_Lista([X|L], Sum) :-    sum_Lista(L, Sum1),
 
 % ------------------------------------------
 % 5: Zonas com maior volume de entregas por parte da Green Distribution.
-
+volumeZonas(L) :- solucoes(Freguesia,encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_), L).
 
 % ------------------------------------------
 % 6: Classificação média de satisfação dos clientes de um determinado estafeta.
 
-estafetaMedia(Estafeta,Media) :-    solucoes(Classificacao,pedido(_,_,_,Estafeta,_,_,_,_,Classificacao,_,_),L),
+estafetaMedia(Estafeta,Media) :-    solucoes(Classificacao,encomenda(_,_,Estafeta,_,_,_,_,_,_,Classificacao,_,_),L),
                                     media_Lista(L,Media).
 
 media_Lista(L,Media) :- sum_Lista(L,Sum),
@@ -56,7 +56,6 @@ media_Lista(L,Media) :- sum_Lista(L,Sum),
 
 % ------------------------------------------
 % 8: Número total de entregas pelos estafetas, num determinado intervalo de tempo.
-entregasTempo(L) :- .
 
 % ------------------------------------------
 % 9: Número de encomendas entregues e não entregues pela Green Distribution, num determinado período de tempo.
