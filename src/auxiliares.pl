@@ -77,21 +77,8 @@ solucoes(E,Q,L) :- findall(E,Q,L).
 comprimento(L,C) :- length(L,C).
 
 % ----------------------------------------
-% Extensão do meta-predicado somatório: Lista, Somatório -> {V,F}
-sum_Lista([], 0).
-sum_Lista([X|L], Sum) :- sum_Lista(L, Sum1), 
-                         Sum is X + Sum1.
-
-% ----------------------------------------
-% Extensão do meta-predicado média: Lista, Média -> {V, F}
-media_Lista(L, Media) :- sum_Lista(L, Sum),
-                        comprimento(L, Comp),
-                        Comp > 0,
-                        Media is Sum/Comp.
-
-% ----------------------------------------
 % Extensão do meta-predicado membro: Elemento, Lista -> {V, F}
 membro(X,[X|_]).
-membro(X,[H|T]) :- X \= H, membro(X,T).
+membro(X,[Y|L]) :- X \= Y, membro(X,L).
 
 % ----------------------------------------
