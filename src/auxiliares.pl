@@ -44,7 +44,7 @@ validaTransporte(T) :- integer(T), T >= 1, T =< 3.
 
 % ----------------------------------------
 % Verifica se um prazo de entrega é válido: Prazo -> {V, F}
-validaPrazo(PE) :- integer(PE), PE >= 1, PE =< 3, PE == 6, PE == 7.
+validaPrazo(PE) :- integer(PE), PE >= 0, PE =< 3, PE == 6, PE == 7.
 
 % ----------------------------------------
 % Verifica se uma classificação é válida: Classificação -> {V, F}
@@ -53,11 +53,11 @@ validaClassificacao(C) :- integer(C), C >= 0, C =< 5.
 % ----------------------------------------
 % Verifica se uma data é válida: Data -> {V, F}
 validaData(Ano,Mes,Dia,Hora) :- integer(Ano), integer(Mes), integer(Dia), integer(Hora),
-                                pertence(Mes, [1,3,5,7,8,10,12]),
+                                membro(Mes, [1,3,5,7,8,10,12]),
                                 Dia >= 1, Dia =< 31,
                                 Hora >= 0, Hora =< 23.
 validaData(Ano,Mes,Dia,Hora) :- integer(Ano), integer(Mes), integer(Dia), integer(Hora),
-                                pertence(Mes, [4,6,9,11]),
+                                membro(Mes, [4,6,9,11]),
                                 Dia >= 1, Dia =< 30,
                                 Hora >= 0, Hora =< 23.
 validaData(Ano,2,Dia,Hora) :-   integer(Ano), integer(Dia), integer(Hora),
