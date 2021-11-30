@@ -26,7 +26,8 @@ clientesEstafeta(L,Estafeta) :- solucoes(Cliente,pedido(_,Cliente,_,Estafeta,_,_
 
 % ------------------------------------------
 % 4: Valor faturado pela Green Distribution num determinado dia.
-
+faturaDia(Data,Sum) :- solucoes(Preco,pedido(_,_,_,_,_,_,Data,_,_,_,Preco), L),
+                     sum_Lista(L,Sum).
 
 % ------------------------------------------
 % 5: Zonas com maior volume de entregas por parte da Green Distribution.
@@ -35,6 +36,8 @@ clientesEstafeta(L,Estafeta) :- solucoes(Cliente,pedido(_,Cliente,_,Estafeta,_,_
 % ------------------------------------------
 % 6: Classificação média de satisfação dos clientes de um determinado estafeta.
 
+estafetaMedia(Estafeta,Media) :- solucoes(Classificacao,pedido(_,_,_,Estafeta,_,_,_,_,Classificacao,_,_),L),
+                                media_Lista(L,Media).
 
 % ------------------------------------------
 % 7: Número total de entregas pelos diferentes meios de transporte, num determinado intervalo de tempo.

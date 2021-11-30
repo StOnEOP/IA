@@ -34,7 +34,7 @@ cliente(10, 8).
 
 pedido(      1,        1,         3,          5,           'Rua Javarda',                'Amares',               data(2020,2,1),          1,           0,                     1,          5  ).
 pedido(      2,        2,         5,          1,           'Rua do Andre',               'Maia',                 data(2020,3,3),          0,           4,                     2,          10 ).
-pedido(      3,        3,         4,          4,           'Rua do Puorto',              'Puerto',               data(2020,5,12),         6,           5,                     3,          5  ).
+pedido(      3,        3,         4,          4,           'Rua do Puorto',              'Puerto',               data(2020,2,1),         6,           5,                     3,          5  ).
 pedido(      4,        4,         7,          3,           'Rua da Senhora à Branca',    'S.Victor',             data(2020,1,22),         7,           3,                     3,          25 ).
 pedido(      5,        5,         1,          2,           'Rua do St0nE',               'Paços de Ferreira',    data(2020,12,29),        2,           4,                     2,          65 ).
 pedido(      6,        6,         2,          2,           'Rua Nossa Senhora',          'Amadora',              data(2020,5,10),         3,           2,                     1,          12 ).
