@@ -63,6 +63,11 @@ validaData(Ano,Mes,Dia,Hora) :- integer(Ano), integer(Mes), integer(Dia), intege
 validaData(Ano,2,Dia,Hora) :-   integer(Ano), integer(Dia), integer(Hora),
                                 Dia >= 1, Dia =< 29, Hora >= 0, Hora =< 23.
 
+% Compara datas: Data, Data -> {V, F}
+comparaData(Ano,Mes,Dia,Hora,Ano2,Mes2,Dia2,Hora2) :-   integer(Ano), integer(Mes), integer(Dia), integer(Hora), integer(Ano), integer(Mes), integer(Dia), integer(Hora),
+                                                        Ano >= Ano2, Mes >= Mes2, Dia >= Dia2, Hora >= Hora2.
+                                
+
 % ----------------------------------------
 % Extensão do meta-predicado nao: Questao -> {V, F}
 nao(Questao) :- Questao, !, fail.

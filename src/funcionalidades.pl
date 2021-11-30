@@ -82,6 +82,7 @@ media_Lista(L,Media) :- sum_Lista(L,Sum),
 
 % ------------------------------------------
 % 7: Número total de entregas pelos diferentes meios de transporte, num determinado intervalo de tempo.
+totalEntregasTransporte(validaData, validaData2, L) :- solucoes(Freguesia, encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_), L)
 
 
 % ------------------------------------------
