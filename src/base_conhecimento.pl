@@ -22,6 +22,7 @@ cliente(3, 4).
 cliente(4, 7).
 cliente(5, 1).
 cliente(6, 2).
+cliente(6, 11).
 cliente(7, 10).
 cliente(8, 6).
 cliente(9, 9).
@@ -41,6 +42,7 @@ pedido(      7,        7,         10,         4,           'Rua de Pedra',      
 pedido(      8,        8,         6,          4,           'Rua do Armando',             'S.Vicente',            data(2020,9,15),         1,           4,                     3,          7  ).
 pedido(      9,        9,         9,          2,           'Rua Gostosa',                'Augusto',              data(2020,8,17),         7,           2,                     1,          8  ).
 pedido(      10,       10,        8,          1,           'Rua da Misecordia',          'Fátima',               data(2020,7,27),         6,           5,                     2,          23 ).
+pedido(      11,       6,        8,          1,           'Rua da Misecordia',          'Fátima',               data(2020,7,27),         6,           5,                     2,          23 ).
 
 %-------------------------------
 % Encomendas

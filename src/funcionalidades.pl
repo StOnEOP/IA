@@ -3,16 +3,26 @@
 % ---------------------
 
 % ------------------------------------------
-% 1: Estafeta que utilizou mais vezes um meio de transporte mais ecológico.
+% Definições iniciais
+:- consult('auxiliares.pl').
+:- consult('base_conhecimento.pl').
+:- consult('invariantes.pl').
 
+% ------------------------------------------
+% 1: Estafeta que utilizou mais vezes um meio de transporte mais ecológico.
+estafetaEcologico(L) :- solucoes(Estafeta,pedido(_,_,_,Estafeta,_,_,_,_,_,1,_),L).
 
 % ------------------------------------------
 % 2: Estafetas que entregaram determinadas encomendas a um determinado cliente.
+estafetasEncomendaCliente(L,LE,Cliente) :-  solucoes(Encomenda,pedido(_,Cliente,Encomenda,_,_,_,_,_,_,_,_),S),
+                                            verificarLE(LE,S,L).
 
+verificarLE([H|T],S,L) :- nao(membro(H,S)), verificarLE(T,S,L).
+verificarLE([H|T],S,[H|L]).
 
 % ------------------------------------------
 % 3: Clientes servidos por um determinado estafeta.
-
+clientesEstafeta(L,Estafeta) :- solucoes(Cliente,pedido(_,Cliente,_,Estafeta,_,_,_,_,_,_,_),L).
 
 % ------------------------------------------
 % 4: Valor faturado pela Green Distribution num determinado dia.

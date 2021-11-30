@@ -77,8 +77,8 @@ solucoes(E,Q,L) :- findall(E,Q,L).
 comprimento(L,C) :- length(L,C).
 
 % ----------------------------------------
-% Extensão do meta-predicado pertence: Elemento, Lista -> {V, F}
-pertence(X,[X|_]).
-pertence(X,[H|T]) :- X \= H, pertence(X,T).
+% Extensão do meta-predicado membro: Elemento, Lista -> {V, F}
+membro(X,[X|_]).
+membro(X,[H|T]) :- X \= H, membro(X,T).
 
 % ----------------------------------------
