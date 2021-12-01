@@ -11,13 +11,13 @@
 % ------------------------------------------
 % 1: Estafeta que utilizou mais vezes um meio de transporte mais ecológico.
 estafetaEcologico(Elem) :-  solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,1,_),L),
-                            maxOcurr(Max,L,Elem).
+                            maxOcurr(_,L,Elem).
 
-contaElem(X,[],0).
+contaElem(_,[],0).
 contaElem(X,[X|T],Count) :- contaElem(X,T,Count1), Count is Count1+1.
-contaElem(X,[H|T],Count) :- contaElem(X,T,Count).
+contaElem(X,[_|T],Count) :- contaElem(X,T,Count).
 
-apagaT(X,[],[]).
+apagaT(_,[],[]).
 apagaT(X,[X|R],L) :- apagaT(X,R,L).
 apagaT(X,[Y|R],[Y|L]) :- X \= Y, apagaT(X,R,L).
 
