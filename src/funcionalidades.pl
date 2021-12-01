@@ -101,7 +101,22 @@ somaTransportes(X,Y,Z,[(_,T)|R]) :-   somaTransportes(X1,Y1,Z1,R),
 
 % ------------------------------------------
 % 8: Número total de entregas pelos estafetas, num determinado intervalo de tempo.
+totalEntregasEstafeta(Data1, Data2, Sorted) :- solucoes((Data,Estafeta), encomenda(_,_,Estafeta,_,_,_,_,Data,_,_,_,_), L1),
+                                               filtraDataEstafeta(Data1,Data2,L1,L2),
+                                               numeroEntregas(L2,L3),
+                                               sort(L3, Sorted).
 
+filtraDataEstafeta(_,_,[],[]).
+filtraDataEstafeta(Data1,Data2,[(D,E)|R],L2) :-  comparaData(Data1,D),
+                                                 nao(comparaData(Data2,D)),
+                                                 filtraDataEstafeta(Data1,Data2,R,L1),
+                                                 adicionar(E,L1,L2).                                              
+
+numeroEntregas([],[]).
+numeroEntregas([H|T], L) :-  contaElem(H, [H|T], Count),
+                             apagaT(H, [H|T], NewList),
+                             numeroEntregas(NewList, Ls),
+                             adicionar((H,Count), Ls, L), !.
 
 % ------------------------------------------
 % 9: Número de encomendas entregues e não entregues pela Green Distribution, num determinado período de tempo.
