@@ -31,13 +31,8 @@ maxOcurr(Max, [H|T], L) :- contaElem(H,[H|T],Count),
                         
 % ------------------------------------------
 % 2: Estafetas que entregaram determinadas encomendas a um determinado cliente.
-<<<<<<< HEAD
-estafetasEncomendaCliente(LE,Cliente,L) :-  solucoes(Encomenda,encomenda(Encomenda,Cliente,_,_,_,_,_,_,_,_,_,_),S),
-                                            verificarLE(LE,S,L).
-=======
 estafetasEncomendaCliente(LE,Cliente,L) :-   solucoes(Encomenda,encomenda(Encomenda,Cliente,_,_,_,_,_,_,_,_,_,_),S),
                                                 verificarLE(LE,S,L).
->>>>>>> ebcb8fbae9a6a40520f80da8d8d7f8c42cc62024
 
 verificarLE([],_,_).
 verificarLE([H|T],S,L) :- membro(H,S), verificarLE2(H,L,L), verificarLE(T,S,L).
