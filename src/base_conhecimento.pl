@@ -39,6 +39,6 @@ encomenda(  7,  4,  4,  4,  9,  'Rua de Pedra',             'Pedregulho',       
 encomenda(  8,  10, 4,  10, 7,  'Rua do Armando',           'S.Vicente',            validaData(2020,9,15,9),    1,  4,  3,  7 ).
 encomenda(  9,  9,  2,  9,  5,  'Rua Gostosa',              'Augusto',              validaData(2020,8,17,10),   7,  2,  1,  8 ).
 encomenda(  10, 7,  1,  7,  69, 'Rua da Misecordia',        'Fátima',               validaData(2020,7,27,20),   6,  5,  2,  23).
-encomenda(  11, 6,  1,  1,  15, 'Rua da Misecordia',        'Fátima',               validaData(2020,7,27,18),   6,  5,  2,  23).
+encomenda(  11, 6,  3,  1,  15, 'Rua da Misecordia',        'Fátima',               validaData(2020,7,27,18),   6,  5,  2,  23).
 
 %-------------------------------

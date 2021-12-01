@@ -45,12 +45,12 @@ clientesEstafeta(L,Estafeta) :- solucoes(Cliente,encomenda(_,Cliente,Estafeta,_,
 
 % ------------------------------------------
 % 4: Valor faturado pela Green Distribution num determinado dia.
-faturaDia(validaData,Sum) :-    solucoes(Preco,encomenda(_,_,_,_,_,_,_,validaData,_,_,_,Preco),L),
-                                sum_Lista(L,Sum).
+faturaDia(validaData(A,M,D,_),Sum) :-   solucoes(Preco,encomenda(_,_,_,_,_,_,_,validaData(A,M,D,_),_,_,_,Preco),L),
+                                        sum_Lista(L,Sum).
 
 sum_Lista([],0).
-sum_Lista([X|L],Sum) :-    sum_Lista(L,Sum1), 
-                            Sum is X + Sum1.
+sum_Lista([X|L],Sum) :- sum_Lista(L,Sum1), 
+                        Sum is X + Sum1.
 
 % ------------------------------------------
 % 5: Zonas com maior volume de entregas por parte da Green Distribution.
@@ -71,7 +71,6 @@ encomendaComMaisVolume(Max,[Freguesia|T],L) :-  contaTodosOsVolumes(Freguesia,Co
                                                                                     
 % ------------------------------------------
 % 6: Classificação média de satisfação dos clientes de um determinado estafeta.
-
 estafetaMedia(Estafeta,Media) :-    solucoes(Classificacao,encomenda(_,_,Estafeta,_,_,_,_,_,_,Classificacao,_,_),L),
                                     media_Lista(L,Media).
 
@@ -94,19 +93,19 @@ media_Lista(L,Media) :- sum_Lista(L,Sum),
 
 % ------------------------------------------
 % 10: Peso total transportado por cada estafeta, num determinado dia.
-estafetaPeso(Data,Sol) :-   solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,Data,_,_,_,_),L),
-                            sort(0,@<,L,Ls),
-                            estafetaPesoAux(Data,Sol,Ls).
+estafetaPeso(validaData(A,M,D,_),Sol) :- solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,validaData(A,M,D,_),_,_,_,_),L),
+                                sort(0,@<,L,Ls),
+                                estafetaPesoAux(validaData(A,M,D,_),Sol,Ls).
 
 estafetaPesoAux(_,_,[]).
-estafetaPesoAux(Data,L,[Estafeta|T]) :- contaTodosOsPesos(Data,Estafeta,Sum),
-                                        estafetaPesoAux(Data,L1,T),
+estafetaPesoAux(validaData(A,M,D,_),L,[Estafeta|T]) :- contaTodosOsPesos(validaData(A,M,D,_),Estafeta,Sum),
+                                        estafetaPesoAux(validaData(A,M,D,_),L1,T),
                                         adicionar((Estafeta,Sum),L1,L), !.
 
 adicionar(X,[],[X]).                                              
 adicionar(X,L,[X|L]).
 
-contaTodosOsPesos(Data,Estafeta,Sum) :- solucoes(Peso,encomenda(_,_,Estafeta,Peso,_,_,_,Data,_,_,_,_),L),
+contaTodosOsPesos(validaData(A,M,D,_),Estafeta,Sum) :- solucoes(Peso,encomenda(_,_,Estafeta,Peso,_,_,_,validaData(A,M,D,_),_,_,_,_),L),
                                         sum_Lista(L,Sum).
 
 % ------------------------------------------

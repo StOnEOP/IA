@@ -66,7 +66,7 @@ validaData(Ano,2,Dia,Hora) :-   integer(Ano), integer(Dia), integer(Hora),
 % ----------------------------------------
 % Extensão do meta-predicado nao: Questao -> {V, F}
 nao(Questao) :- Questao, !, fail.
-nao(Questao).
+nao(_).
 
 % ----------------------------------------
 % Extensão do meta-predicado solucoes: Elemento, Questao, Lista -> {V, F}
