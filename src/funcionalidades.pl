@@ -97,16 +97,17 @@ somaTransportes(X,Y,Z,[(_,T)|R]) :- somaTransportes(X1,Y1,Z1,R),
 
 % ------------------------------------------
 % 8: Número total de entregas pelos estafetas, num determinado intervalo de tempo.
-totalEntregasEstafeta(Data1,Data2,Sorted) :-    solucoes((Data,Estafeta),encomenda(_,_,Estafeta,_,_,_,_,Data,_,_,_,_),L1),
-                                                filtraDataEstafeta(Data1,Data2,L1,L2),
-                                                numeroEntregas(L2,L3),
-                                                sort(L3,Sorted).
+totalEntregasEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted) :-    solucoes((validaData(A3,M3,D3,H3),Estafeta),encomenda(_,_,Estafeta,_,_,_,_,validaData(A3,M3,D3,H3),_,_,_,_),L1),
+                                                                                    filtraDataEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L1,L2),
+                                                                                    numeroEntregas(L2,L3),
+                                                                                    sort(L3,Sorted).
 
 filtraDataEstafeta(_,_,[],[]).
-filtraDataEstafeta(Data1,Data2,[(D,E)|R],L2) :- comparaData(Data1,D),
-                                                nao(comparaData(Data2,D)),
-                                                filtraDataEstafeta(Data1,Data2,R,L1),
-                                                adicionar(E,L1,L2).                                              
+filtraDataEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(D,E)|R],L2) :- (comparaData(validaData(A1,M1,D1,H1),D),
+                                                                                    nao(comparaData(validaData(A2,M2,D2,H2),D))) ->
+                                                                                    filtraDataEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L1),
+                                                                                    adicionar(E,L1,L2);
+                                                                                    filtraDataEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L2).                                              
 
 numeroEntregas([],[]).
 numeroEntregas([H|T],L) :-  contaElem(H,[H|T],Count),
@@ -116,8 +117,13 @@ numeroEntregas([H|T],L) :-  contaElem(H,[H|T],Count),
 
 % ------------------------------------------
 % 9: Número de encomendas entregues e não entregues pela Green Distribution, num determinado período de tempo.
+%entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), L) :- solucoes(validaData(A3,M3,D3,H3),encomenda(_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,_,_),L1),
+%                                                                            somaData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), L1, L).
 
 
+%somaData(_, _, [], []).
+%somaData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), [validaData(A3,M3,D3,H3)|T], L) :- (comparaData(validaData(A1,M1,D1,H1),D),
+%                                                                                            nao(comparaData(validaData(A2,M2,D2,H2),D))), L.
 % ------------------------------------------
 % 10: Peso total transportado por cada estafeta, num determinado dia.
 estafetaPeso(validaData(A,M,D,_),Sol) :-    solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,validaData(A,M,D,_),_,_,_,_),L),
