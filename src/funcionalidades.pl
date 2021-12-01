@@ -10,34 +10,29 @@
 
 % ------------------------------------------
 % 1: Estafeta que utilizou mais vezes um meio de transporte mais ecológico.
-estafetaEcologico(Elem) :- solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,1,_),L),
-                          maxOcurr(Max, L, Elem).
+estafetaEcologico(Elem) :-  solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,1,_),L),
+                            maxOcurr(_,L,Elem).
 
-contaElem(X, [], 0).
-contaElem(X, [X|T], Count) :- contaElem(X, T, Count1), Count is Count1 + 1.
-contaElem(X, [H|T], Count) :- contaElem(X, T, Count).
+contaElem(_,[],0).
+contaElem(X,[X|T],Count) :- contaElem(X,T,Count1), Count is Count1+1.
+contaElem(X,[_|T],Count) :- contaElem(X,T,Count).
 
-apagaT(X, [], []).
-apagaT(X, [X|R], L) :- apagaT(X,R,L).
-apagaT(X, [Y|R], [Y|L]) :- X \= Y, apagaT(X,R,L).
+apagaT(_,[],[]).
+apagaT(X,[X|R],L) :- apagaT(X,R,L).
+apagaT(X,[Y|R],[Y|L]) :- X \= Y, apagaT(X,R,L).
 
-maxOcurr(0, [], []).
-maxOcurr(Max, [H|T], L) :- contaElem(H,[H|T],Count),
-                           apagaT(H,[H|T],NewList), 
-                           maxOcurr(NewMax,NewList,Ls),
-                           (Count > NewMax -> Max = Count, L = H;
-                           Max = NewMax, L = Ls), !.
+maxOcurr(0,[],[]).
+maxOcurr(Max,[H|T],L) :-    contaElem(H,[H|T],Count),
+                            apagaT(H,[H|T],NewList), 
+                            maxOcurr(NewMax,NewList,Ls),
+                            (Count > NewMax -> Max = Count, L = H;
+                            Max = NewMax, L = Ls), !.
                         
                         
 % ------------------------------------------
 % 2: Estafetas que entregaram determinadas encomendas a um determinado cliente.
-<<<<<<< HEAD
 estafetasEncomendaCliente(LE,Cliente,L) :-  solucoes(Encomenda,encomenda(Encomenda,Cliente,_,_,_,_,_,_,_,_,_,_),S),
                                             verificarLE(LE,S,L).
-=======
-estafetasEncomendaCliente(LE,Cliente,L) :-   solucoes(Encomenda,encomenda(Encomenda,Cliente,_,_,_,_,_,_,_,_,_,_),S),
-                                                verificarLE(LE,S,L).
->>>>>>> ebcb8fbae9a6a40520f80da8d8d7f8c42cc62024
 
 verificarLE([],_,_).
 verificarLE([H|T],S,L) :- membro(H,S), verificarLE2(H,L,L), verificarLE(T,S,L).
@@ -50,25 +45,25 @@ clientesEstafeta(L,Estafeta) :- solucoes(Cliente,encomenda(_,Cliente,Estafeta,_,
 
 % ------------------------------------------
 % 4: Valor faturado pela Green Distribution num determinado dia.
-faturaDia(validaData,Sum) :-  solucoes(Preco,encomenda(_,_,_,_,_,_,_,validaData,_,_,_,Preco), L),
-                        sum_Lista(L,Sum).
+faturaDia(validaData,Sum) :-    solucoes(Preco,encomenda(_,_,_,_,_,_,_,validaData,_,_,_,Preco),L),
+                                sum_Lista(L,Sum).
 
-sum_Lista([], 0).
-sum_Lista([X|L], Sum) :-    sum_Lista(L, Sum1), 
+sum_Lista([],0).
+sum_Lista([X|L],Sum) :-    sum_Lista(L,Sum1), 
                             Sum is X + Sum1.
 
 % ------------------------------------------
 % 5: Zonas com maior volume de entregas por parte da Green Distribution.
-zonaMaisVolume(Max,Zona) :- solucoes(Freguesia, encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_), L),
-                               sort(0, @<, L, Ls),
-                               encomendaComMaisVolume(Max, Ls, Zona).
+zonaMaisVolume(Max,Zona) :- solucoes(Freguesia,encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_),L),
+                            sort(0,@<,L,Ls),
+                            encomendaComMaisVolume(Max,Ls,Zona).
 
-contaTodosOsVolumes(Freguesia, Sum) :- solucoes(Volume, encomenda(_,_,_,_,Volume,_,Freguesia,_,_,_,_,_), L),
-                                       sum_Lista(L,Sum).
+contaTodosOsVolumes(Freguesia,Sum) :-   solucoes(Volume,encomenda(_,_,_,_,Volume,_,Freguesia,_,_,_,_,_),L),
+                                        sum_Lista(L,Sum).
 
 encomendaComMaisVolume(0,[],[]).
-encomendaComMaisVolume(Max, [Freguesia], [Freguesia]) :- contaTodosOsVolumes(Freguesia,C), Max = C.
-encomendaComMaisVolume(Max, [Freguesia|T], L) :- contaTodosOsVolumes(Freguesia,Count),
+encomendaComMaisVolume(Max,[Freguesia],[Freguesia]) :- contaTodosOsVolumes(Freguesia,C), Max = C.
+encomendaComMaisVolume(Max,[Freguesia|T],L) :-  contaTodosOsVolumes(Freguesia,Count),
                                                 encomendaComMaisVolume(CountMax,T,Ls),
                                                 (Count > CountMax -> Max = Count, L = [Freguesia];
                                                 Count == CountMax -> Max = CountMax, L = [Freguesia|Ls]; 
@@ -107,15 +102,26 @@ somaTransportes(X,Y,Z,[(_,T)|R]) :-   somaTransportes(X1,Y1,Z1,R),
 % ------------------------------------------
 % 8: Número total de entregas pelos estafetas, num determinado intervalo de tempo.
 
+
 % ------------------------------------------
 % 9: Número de encomendas entregues e não entregues pela Green Distribution, num determinado período de tempo.
 
 
 % ------------------------------------------
 % 10: Peso total transportado por cada estafeta, num determinado dia.
+estafetaPeso(Data,Sol) :-   solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,Data,_,_,_,_),L),
+                            sort(0,@<,L,Ls),
+                            estafetaPesoAux(Data,Sol,Ls).
 
-adicionar(X,[],[X]).
+estafetaPesoAux(_,_,[]).
+estafetaPesoAux(Data,L,[Estafeta|T]) :- contaTodosOsPesos(Data,Estafeta,Sum),
+                                        estafetaPesoAux(Data,L1,T),
+                                        adicionar((Estafeta,Sum),L1,L), !.
+
+adicionar(X,[],[X]).                                              
 adicionar(X,L,[X|L]).
 
+contaTodosOsPesos(Data,Estafeta,Sum) :- solucoes(Peso,encomenda(_,_,Estafeta,Peso,_,_,_,Data,_,_,_,_),L),
+                                        sum_Lista(L,Sum).
 
 % ------------------------------------------
