@@ -87,7 +87,21 @@ media_Lista(L,Media) :- sum_Lista(L,Sum),
 
 % ------------------------------------------
 % 7: Número total de entregas pelos diferentes meios de transporte, num determinado intervalo de tempo.
-totalEntregasTransporte(validaData, validaData2, L) :- solucoes(Freguesia, encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_), L)
+totalEntregasTransporte(Data1, Data2, X,Y,Z) :-  solucoes((Data,Transporte), encomenda(_,_,_,_,_,_,_,Data,_,_,Transporte,_), L1),
+                                            filtraData(Data1,Data2,L1,L2),
+                                            somaTransportes(X,Y,Z,L2).
+
+filtraData(_,_,[],[]).
+filtraData(Data1,Data2,[(D,T)|R],L2) :-  comparaData(Data1,D),
+                                            nao(comparaData(Data2,D)),
+                                            filtraData(Data1,Data2,R,L1),
+                                            adicionar((D,T),L1,L2).
+
+somaTransportes(0,0,0,[]).
+somaTransportes(X,Y,Z,[(_,T)|R]) :-   somaTransportes(X1,Y1,Z1,R),
+                                        (T == 1 -> X is X1+1; (T == 2 -> Y is Y1+1; (T == 3 -> Z is Z1+1))).
+                                        
+                                            
 
 
 % ------------------------------------------
@@ -99,6 +113,9 @@ totalEntregasTransporte(validaData, validaData2, L) :- solucoes(Freguesia, encom
 
 % ------------------------------------------
 % 10: Peso total transportado por cada estafeta, num determinado dia.
+
+adicionar(X,[],[X]).
+adicionar(X,L,[X|L]).
 
 
 % ------------------------------------------
