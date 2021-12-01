@@ -67,18 +67,22 @@ rule(6) :-  write('6: Classificação média de satisfação dos clientes de um 
 
 % - Query 7 - Teste: 
 rule(7) :-  write('7: Número total de entregas pelos diferentes meios de transporte, num determinado intervalo de tempo.'), nl,
-            write('Query não realizada'),
-            write('Resposta: '), nl, nl.
+            write('Introduza a primeira data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read(Data1),
+            write('Introduza a segunda data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read(Data2),
+            totalEntregasTransporte(Data1,Data2,Bicicleta,Moto,Carro),
+            write('Resposta: '), write('Bicicleta - '), write(Bicicleta), write(' , Moto - '), write(Moto), write(' , Carro - '), write(Carro), !, nl, nl.
 
 % - Query 8 - Teste: 
 rule(8) :-  write('8: Número total de entregas pelos estafetas, num determinado intervalo de tempo.'), nl,
-            write('Query não realizada'),
-            write('Resposta: '), nl, nl.
+            write('Introduza a primeira data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read(Data1),
+            write('Introduza a segunda data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read(Data2),
+            totalEntregasEstafeta(Data1,Data2,Sorted),
+            write('Resposta: '), write(Sorted), !, nl, nl.
 
 % - Query 9 - Teste: 
 rule(9) :-  write('9: Número de encomendas entregues e não entregues pela Green Distribution, num determinado período de tempo.'), nl,
-            write('Query não realizada'),
-            write('Resposta: '), nl, nl.
+            write('Query não realizada.'), !, nl, nl.
+            %write('Resposta: '), nl, nl.
 
 % - Query 10 - Teste: (2020,2,1,3)
 rule(10) :- write('10: Peso total transportado por cada estafeta, num determinado dia.'), !, nl,
