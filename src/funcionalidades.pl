@@ -107,13 +107,23 @@ parElementoOcurrencia([H|T],L) :-  contaElem(H,[H|T],Count),
 
 % ------------------------------------------
 % 9: Número de encomendas entregues e não entregues pela Green Distribution, num determinado período de tempo.
-%entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), L) :- solucoes(validaData(A3,M3,D3,H3),encomenda(_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,_,_),L1),
-%                                                                            somaData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), L1, L).
+entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), (A,B)) :- solucoes(validaData(A3,M3,D3,H3),encomenda(_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,_,_,_),L1),
+                                                                                contaNaoEntregues(L2,L1,B),
+                                                                                contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L2,A).
+
+contaNaoEntregues(_,[], 0).
+contaNaoEntregues(L,[validaData(A,_,_,_)|T], X) :- A > 0 -> apagaT(validaData(A,_,_,_),[validaData(A,_,_,_)|T],L), contaNaoEntregues(L,T, X1), X is X1+1;
+                                                            contaNaoEntregues(L,T,X).
 
 
-%somaData(_, _, [], []).
-%somaData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), [validaData(A3,M3,D3,H3)|T], L) :- (comparaData(validaData(A1,M1,D1,H1),D),
-%                                                                                            nao(comparaData(validaData(A2,M2,D2,H2),D))), L.
+contaEntregueDentroPrazo(_, _, [], 0).
+contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), [validaData(A3,M3,D3,H3)|T], X) :- (comparaData(validaData(A1,M1,D1,H1),validaData(A3,M3,D3,H3)),  
+                                                                                                            nao(comparaData(validaData(A2,M2,D2,H2),validaData(A3,M3,D3,H3)))) ->
+                                                                                                            contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,X1),T, X is X1+1;
+                                                                                                            contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,X1)).
+                                                                                                            
+
+                                                              
 % ------------------------------------------
 % 10: Peso total transportado por cada estafeta, num determinado dia.
 estafetaPeso(validaData(A,M,D,_),Sol) :-    solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,validaData(A,M,D,_),_,_,_,_),L),
