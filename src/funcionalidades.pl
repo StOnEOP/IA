@@ -127,7 +127,7 @@ filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(D3,D4,P)|R],L2) :- 
                                                                                 nao(comparaData(validaData(A2,M2,D2,H2),D3))) ->
                                                                                 filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L1),
                                                                                 adicionar((D3,D4,P),L1,L2);
-                                                                                filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L2).                                              
+                                                                                filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L2).                                              
 
 contaDatasEntregues(_,_,[],0).
 contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(_,validaData(0,0,0,0),_)|T],A) :- contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,A).     
