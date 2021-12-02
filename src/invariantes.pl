@@ -30,7 +30,9 @@
 % Prazo de entrega: imediato = 0 , 2h = 2, 6h = 6, 1 dia = 1, 3 dias = 3, 7 dias = 7.
 % Classificação da entrega: 0 a 5.
 % Transporte: bicicleta - 1 , moto - 2 , carro - 3.
-+encomenda(IDEncomenda,IDCliente,IDEstafeta,Peso,Volume,Rua,Freguesia,Data,Prazo,Classificacao,Transporte,Preco) :: (integer(IDEncomenda)
+% Preço: calculado através de peso, volume, transporte utilizado (menos ecológico = mais caro) e o prazo de entrega (mais curto = mais caro).
+%calculaPreco(Peso,Volume,Transporte,Prazo,Preco)
++encomenda(IDEncomenda,IDCliente,IDEstafeta,Peso,Volume,Rua,Freguesia,Data,Prazo,Classificacao,Transporte) :: (integer(IDEncomenda)
                                                                                                                     ,integer(IDCliente)
                                                                                                                     ,integer(IDEstafeta)
                                                                                                                     ,integer(Peso)
@@ -40,7 +42,7 @@
                                                                                                                     ,validaData(Data)
                                                                                                                     ,validaPrazo(Prazo)
                                                                                                                     ,validaClassificacao(Classificacao)
-                                                                                                                    ,validaTransporte(Transporte)
-                                                                                                                    ,integer(Preco)).
+                                                                                                                    ,validaTransporte(Transporte)).
+                                                                                                                    
 
 % ------------------------------------------

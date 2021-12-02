@@ -10,7 +10,7 @@
 
 % ------------------------------------------
 % 1: Estafeta que utilizou mais vezes um meio de transporte mais ecológico.
-estafetaEcologico(Elem) :-  solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,_,1,_),L),
+estafetaEcologico(Elem) :-  solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,_,1),L),
                             maxOcurr(_,L,Elem).
 
 contaElem(_,[],0).
@@ -31,7 +31,7 @@ maxOcurr(Max,[H|T],L) :-    contaElem(H,[H|T],Count),
                         
 % ------------------------------------------
 % 2: Estafetas que entregaram determinadas encomendas a um determinado cliente.
-estafetasEncomendaCliente(LE,Cliente,L) :-  solucoes((Encomenda,Estafeta),encomenda(Encomenda,Cliente,Estafeta,_,_,_,_,_,_,_,_,_,_),S),
+estafetasEncomendaCliente(LE,Cliente,L) :-  solucoes((Encomenda,Estafeta),encomenda(Encomenda,Cliente,Estafeta,_,_,_,_,_,_,_,_,_),S),
                                             verificarLE(LE,S,L).
 
 verificarLE(_,[],[]).
@@ -40,12 +40,18 @@ verificarLE(S,[(A,B)|T],[B|L]) :- membro(A,S), verificarLE(S,T,L).
 
 % ------------------------------------------
 % 3: Clientes servidos por um determinado estafeta.
-clientesEstafeta(L,Estafeta) :- solucoes(Cliente,encomenda(_,Cliente,Estafeta,_,_,_,_,_,_,_,_,_,_),L).
+clientesEstafeta(L,Estafeta) :- solucoes(Cliente,encomenda(_,Cliente,Estafeta,_,_,_,_,_,_,_,_,_),L).
 
 % ------------------------------------------
 % 4: Valor faturado pela Green Distribution num determinado dia.
-faturaDia(validaData(A,M,D,_),Sum) :-   solucoes(Preco,encomenda(_,_,_,_,_,_,_,_,validaData(A,M,D,_),_,_,_,Preco),L),
-                                        sum_Lista(L,Sum).
+faturaDia(validaData(A,M,D,_),Sum) :-   solucoes((Peso,Volume,Transporte,Prazo),encomenda(_,_,_,Peso,Volume,_,_,_,validaData(A,M,D,_),Prazo,_,Transporte),L),
+                                        calculaPrecoLista(L,L1),
+                                        sum_Lista(L1,Sum).
+
+calculaPrecoLista([],[]).
+calculaPrecoLista([(Peso,Volume,Transporte,Prazo)],[P]) :- calculaPreco(Peso,Volume,Transporte,Prazo,P).
+calculaPrecoLista([(Peso,Volume,Transporte,Prazo)|T], [P|L2]) :- calculaPreco(Peso,Volume,Transporte,Prazo,P),
+                                                             calculaPrecoLista(T, L2).
 
 sum_Lista([],0).
 sum_Lista([X|L],Sum) :- sum_Lista(L,Sum1), 
@@ -53,11 +59,11 @@ sum_Lista([X|L],Sum) :- sum_Lista(L,Sum1),
 
 % ------------------------------------------
 % 5: Zonas com maior volume de entregas por parte da Green Distribution.
-zonaMaisVolume(Max,Zona) :- solucoes(Freguesia,encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_,_),L),
+zonaMaisVolume(Max,Zona) :- solucoes(Freguesia,encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_),L),
                             sort(0,@<,L,Ls),
                             encomendaComMaisVolume(Max,Ls,Zona).
 
-contaTodosOsVolumes(Freguesia,Sum) :-   solucoes(Volume,encomenda(_,_,_,_,Volume,_,Freguesia,_,_,_,_,_,_),L),
+contaTodosOsVolumes(Freguesia,Sum) :-   solucoes(Volume,encomenda(_,_,_,_,Volume,_,Freguesia,_,_,_,_,_),L),
                                         sum_Lista(L,Sum).
 
 encomendaComMaisVolume(0,[],[]).
@@ -70,7 +76,7 @@ encomendaComMaisVolume(Max,[Freguesia|T],L) :-  contaTodosOsVolumes(Freguesia,Co
                                                                                     
 % ------------------------------------------
 % 6: Classificação média de satisfação dos clientes de um determinado estafeta.
-estafetaMedia(Estafeta,Media) :-    solucoes(Classificacao,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,Classificacao,_,_),L),
+estafetaMedia(Estafeta,Media) :-    solucoes(Classificacao,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,Classificacao,_),L),
                                     media_Lista(L,Media).
 
 media_Lista(L,Media) :- sum_Lista(L,Sum),
@@ -80,7 +86,7 @@ media_Lista(L,Media) :- sum_Lista(L,Sum),
 
 % ------------------------------------------
 % 7: Número total de entregas pelos diferentes meios de transporte, num determinado intervalo de tempo.
-totalEntregasTransporte(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted) :-  solucoes((validaData(A3,M3,D3,H3),Transporte),encomenda(_,_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,Transporte,_),L1),
+totalEntregasTransporte(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted) :-  solucoes((validaData(A3,M3,D3,H3),Transporte),encomenda(_,_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,Transporte),L1),
                                                                                     filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L1,L2),
                                                                                     parElementoOcurrencia(L2,L3),
                                                                                     sort(L3,Sorted).
@@ -94,7 +100,7 @@ filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(D,E)|R],L2)
 
 % ------------------------------------------
 % 8: Número total de entregas pelos estafetas, num determinado intervalo de tempo.
-totalEntregasEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted) :-    solucoes((validaData(A3,M3,D3,H3),Estafeta),encomenda(_,_,Estafeta,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,_,_),L1),
+totalEntregasEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted) :-    solucoes((validaData(A3,M3,D3,H3),Estafeta),encomenda(_,_,Estafeta,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,_),L1),
                                                                                     filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L1,L2),
                                                                                     parElementoOcurrencia(L2,L3),
                                                                                     sort(L3,Sorted).                                             
@@ -107,7 +113,7 @@ parElementoOcurrencia([H|T],L) :-  contaElem(H,[H|T],Count),
 
 % ------------------------------------------
 % 9: Número de encomendas entregues e não entregues pela Green Distribution, num determinado período de tempo.
-entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), A,B) :- solucoes((validaData(A3,M3,D3,H3),validaData(A4,M4,D4,H4),P),encomenda(_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),validaData(A4,M4,D4,H4),P,_,_,_),L1),
+entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), A,B) :- solucoes((validaData(A3,M3,D3,H3),validaData(A4,M4,D4,H4),P),encomenda(_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),validaData(A4,M4,D4,H4),P,_,_),L1),
                                                                             filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), L1, L2),
                                                                             verificaZeros(validaData(A2,M2,D2,H2),L2,B),
                                                                             contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), L2, A).
@@ -138,7 +144,7 @@ contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(_,DE,_)|T]
                                                               
 % ------------------------------------------
 % 10: Peso total transportado por cada estafeta, num determinado dia.
-estafetaPeso(validaData(A,M,D,_),Sol) :-    solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,validaData(A,M,D,_),_,_,_,_),L),
+estafetaPeso(validaData(A,M,D,_),Sol) :-    solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,validaData(A,M,D,_),_,_,_),L),
                                             sort(0,@<,L,Ls),
                                             estafetaPesoAux(validaData(A,M,D,_),Sol,Ls).
 
@@ -150,7 +156,7 @@ estafetaPesoAux(validaData(A,M,D,_),L,[Estafeta|T]) :-  contaTodosOsPesos(valida
 adicionar(X,[],[X]).                                              
 adicionar(X,L,[X|L]).
 
-contaTodosOsPesos(validaData(A,M,D,_),Estafeta,Sum) :-  solucoes(Peso,encomenda(_,_,Estafeta,Peso,_,_,_,_,validaData(A,M,D,_),_,_,_,_),L),
+contaTodosOsPesos(validaData(A,M,D,_),Estafeta,Sum) :-  solucoes(Peso,encomenda(_,_,Estafeta,Peso,_,_,_,_,validaData(A,M,D,_),_,_,_),L),
                                                         sum_Lista(L,Sum).
 
 % ------------------------------------------
