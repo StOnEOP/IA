@@ -102,14 +102,7 @@ verificaZeros(validaData(A1,M1,D1,H1),[(D2,validaData(0,0,0,0),P)|T],B) :- nao(e
                                                                            verificaZeros(validaData(A1,M1,D1,H1),T,B1), B is B1 + 1;
                                                                            verificaZeros(validaData(A1,M1,D1,H1),T,B).
 
-verificaZeros(validaData(A1,M1,D1,H1),[(_,_,_)|T],B) :- verificaZeros(validaData(A1,M1,D1,H1),T,B).                                                                                                                                                       
- 
-filtraData(_,_,[],[]).
-filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(D3,D4,P)|R],L2) :- (comparaData(validaData(A1,M1,D1,H1),D3),
-                                                                                nao(comparaData(validaData(A2,M2,D2,H2),D3))) ->
-                                                                                filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L1),
-                                                                                adicionar((D3,D4,P),L1,L2);
-                                                                                filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L2).                                              
+verificaZeros(validaData(A1,M1,D1,H1),[(_,_,_)|T],B) :- verificaZeros(validaData(A1,M1,D1,H1),T,B).                                                                                                                                                                                                  
 
 contaDatasEntregues(_,_,[],0).
 contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(_,validaData(0,0,0,0),_)|T],A) :- contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,A).     
@@ -117,7 +110,13 @@ contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(_,DE,_)|T]
                                                                                         nao(comparaData(validaData(A2,M2,D2,H2),DE))) ->                                                                                                                            
                                                                                         contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,B1), B is B1+1;
                                                                                         contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,B).
-                                                              
+
+filtraData(_,_,[],[]).
+filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(D3,D4,P)|R],L2) :- (comparaData(validaData(A1,M1,D1,H1),D3),
+                                                                                nao(comparaData(validaData(A2,M2,D2,H2),D3))) ->
+                                                                                filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L1),
+                                                                                adicionar((D3,D4,P),L1,L2);
+                                                                                filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L2).                                                                 
 % ------------------------------------------
 % 10: Peso total transportado por cada estafeta, num determinado dia.
 estafetaPeso(validaData(A,M,D,_),Sol) :-    solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,validaData(A,M,D,_),_,_,_),L),
