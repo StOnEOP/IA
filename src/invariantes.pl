@@ -31,17 +31,18 @@
 % Classificação da entrega: 0 a 5.
 % Transporte: bicicleta - 1 , moto - 2 , carro - 3.
 % Preço: calculado através de peso, volume, transporte utilizado (menos ecológico = mais caro) e o prazo de entrega (mais curto = mais caro).
-+encomenda(IDEncomenda,IDCliente,IDEstafeta,Peso,Volume,Rua,Freguesia,Data,Prazo,Classificacao,Transporte) :: (integer(IDEncomenda)
-                                                                                                                    ,integer(IDCliente)
-                                                                                                                    ,integer(IDEstafeta)
-                                                                                                                    ,integer(Peso)
-                                                                                                                    ,integer(Volume)
-                                                                                                                    ,atom(Rua)
-                                                                                                                    ,atom(Freguesia)
-                                                                                                                    ,validaData(Data)
-                                                                                                                    ,validaPrazo(Prazo)
-                                                                                                                    ,validaClassificacao(Classificacao)
-                                                                                                                    ,validaTransporte(Transporte)).
++encomenda(IDEncomenda,IDCliente,IDEstafeta,Peso,Volume,Rua,Freguesia,DataPedido,DataEntrega,Prazo,Classificacao,Transporte) :: (integer(IDEncomenda)
+                                                                                                                                ,integer(IDCliente)
+                                                                                                                                ,integer(IDEstafeta)
+                                                                                                                                ,integer(Peso)
+                                                                                                                                ,integer(Volume)
+                                                                                                                                ,atom(Rua)
+                                                                                                                                ,atom(Freguesia)
+                                                                                                                                ,validaData(DataPedido)
+                                                                                                                                ,validaData(DataEntrega)
+                                                                                                                                ,validaPrazo(Prazo)
+                                                                                                                                ,validaClassificacao(Classificacao)
+                                                                                                                                ,validaTransporte(Transporte)).
                                                                                                                     
 
 % ------------------------------------------
