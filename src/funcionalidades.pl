@@ -115,7 +115,7 @@ entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), (A,B)) :- 
                                                                                 %contaNaoEntregues(L2,L1,B),
                                                                                 %contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L2,A).
 verificaZeros(([_,_,_|T]),B) :- verificaZeros(T,B).
-verificaZeros(([D1,validaData(0,0,0,0),P|T]),B) :-                                                                                  
+verificaZeros(([D1,validaData(0,0,0,0),P|T]),B) :-                                                                                 
  
 encomendaEntregueAux([],0).                                                      
 encomendaEntregueAux([(D1,D2,P)|T],A) :-    encomendaEntregue(D1,D2,P)->
