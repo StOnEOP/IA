@@ -65,26 +65,28 @@ rule(6) :-  write('6: Classificação média de satisfação dos clientes de um 
             estafetaMedia(Estafeta,Media),
             write('Resposta: '), write(Media), !, nl, nl.
 
-% - Query 7 - Teste: 
+% - Query 7 - Teste: (2010,1,1,1) (2030,1,1,1)
 rule(7) :-  write('7: Número total de entregas pelos diferentes meios de transporte, num determinado intervalo de tempo.'), nl,
-            write('Introduza a primeira data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read(Data1),
-            write('Introduza a segunda data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read(Data2),
-            totalEntregasTransporte(Data1,Data2,Bicicleta,Moto,Carro),
-            write('Resposta: '), write('Bicicleta - '), write(Bicicleta), write(' , Moto - '), write(Moto), write(' , Carro - '), write(Carro), !, nl, nl.
+            write('Introduza a primeira data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read((A1,M1,D1,H1)),
+            write('Introduza a segunda data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read((A2,M2,D2,H2)),
+            totalEntregasTransporte(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L),
+            write('Resposta: '), write(L), !, nl, nl.
 
-% - Query 8 - Teste: 
+% - Query 8 - Teste: (2020,1,1,1) (2020,9,9,9)
 rule(8) :-  write('8: Número total de entregas pelos estafetas, num determinado intervalo de tempo.'), nl,
-            write('Introduza a primeira data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read(Data1),
-            write('Introduza a segunda data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read(Data2),
-            totalEntregasEstafeta(Data1,Data2,Sorted),
+            write('Introduza a primeira data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read((A1,M1,D1,H1)),
+            write('Introduza a segunda data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read((A2,M2,D2,H2)),
+            totalEntregasEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted),
             write('Resposta: '), write(Sorted), !, nl, nl.
 
-% - Query 9 - Teste: 
+% - Query 9 - Teste: (2020,1,1,1) (2020,9,9,9)
 rule(9) :-  write('9: Número de encomendas entregues e não entregues pela Green Distribution, num determinado período de tempo.'), nl,
-            write('Query não realizada.'), !, nl, nl.
-            %write('Resposta: '), nl, nl.
+            write('Introduza a primeira data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read((A1,M1,D1,H1)),
+            write('Introduza a segunda data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read((A2,M2,D2,H2)),
+            entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), A,B),
+            write('Resposta: '), write('Encomendas entregues = '), write(A), write('   Encomendas não entregues = '), write(B), !, nl, nl.
 
-% - Query 10 - Teste: (2020,2,1,3)
+% - Query 10 - Teste: (2020,7,28,20)
 rule(10) :- write('10: Peso total transportado por cada estafeta, num determinado dia.'), !, nl,
             write('Introduza uma data no seguinte formato (Ano,Mes,Dia,Hora).'), !, nl, read((A,M,D,H)),
             estafetaPeso(validaData(A,M,D,H),L),

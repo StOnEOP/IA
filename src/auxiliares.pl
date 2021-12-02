@@ -48,6 +48,44 @@ encomendaEntregue(validaData(A1,M1,D1,H1), validaData(A2,M2,D2,H2), P) :- (P == 
                                                                           (P == 1 -> A1 == A2, M1 == M2, D2-D1 =< 1);
                                                                           (P == 3 -> A1 == A2, M1 == M2, D2-D1 =< 3);
                                                                           (P == 7 -> A1 == A2, M1 == M2, D2-D1 =< 7).
+% ----------------------------------------
+% Conta elementos : Elem, L -> {V, F}
+contaElem(_,[],0).
+contaElem(X,[X|T],Count) :- contaElem(X,T,Count1), Count is Count1+1.
+contaElem(X,[_|T],Count) :- contaElem(X,T,Count).
+
+% ----------------------------------------
+% Somatorio de uma lista : L -> {V, F}
+sum_Lista([],0).
+sum_Lista([X|L],Sum) :- sum_Lista(L,Sum1), 
+                        Sum is X + Sum1.
+
+% ----------------------------------------
+% Adiciona os elementos com datas entre o intervalo de tempo dado numa nova lista : Data, Data, L -> {V, F}
+filtraDataElemento(_,_,[],[]).
+filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(D,E)|R],L2) :- (comparaData(validaData(A1,M1,D1,H1),D),
+                                                                                    nao(comparaData(validaData(A2,M2,D2,H2),D))) ->
+                                                                                    filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L1),
+                                                                                    adicionar(E,L1,L2);
+                                                                                    filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L2). 
+% ----------------------------------------
+% Adiciona um elemento ao inicio da lista : Elem, L -> {V, F}
+adicionar(X,[],[X]).                                              
+adicionar(X,L,[X|L]).
+
+% ----------------------------------------
+% Cria uma lista de pares (Elem,NºOcurrenciaElemento) : L -> {V, F}
+parElementoOcurrencia([],[]).
+parElementoOcurrencia([H|T],L) :-   contaElem(H,[H|T],Count),
+                                    apagaT(H,[H|T],NewList),
+                                    parElementoOcurrencia(NewList,Ls),
+                                    adicionar((H,Count),Ls,L), !.
+
+% ----------------------------------------
+% Apaga todas as ocurrencias de um elemento numa lista : Elem, L -> {V, F}
+apagaT(_,[],[]).
+apagaT(X,[X|R],L) :- apagaT(X,R,L).
+apagaT(X,[Y|R],[Y|L]) :- X \= Y, apagaT(X,R,L).
 
 % ----------------------------------------
 % Extensão do meta-predicado nao: Questao -> {V, F}

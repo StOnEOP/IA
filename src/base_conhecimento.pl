@@ -31,7 +31,7 @@ cliente(10, 8).
 % encomenda(IDEncomenda,   IDCliente,  IDEstafeta, Peso,   Volume, Rua,    Freguesia,  ValidaDataPedido,        ValidaDataEntrega, Prazo,  Classificacao,  Transporte, Preco)  
 encomenda(  1,  5,  5,  5,  40, 'Rua de Passsos',           'Amares',               validaData(2020,2,1,3),     validaData(2020,2,2,3),     1,  0,  1,  5 ).
 encomenda(  2,  6,  1,  6,  5,  'Rua Rochdale',             'Maia',                 validaData(2020,3,3,5),     validaData(2020,3,3,5),     0,  4,  2,  10).
-encomenda(  3,  1,  4,  1,  10, 'Rua da Quinta Amarela',    'Porto',                validaData(2020,2,1,22),    validaData(0,0,0,0),    6,  5,  3,  5 ).
+encomenda(  3,  1,  4,  1,  10, 'Rua da Quinta Amarela',    'Porto',                validaData(2020,2,1,22),    validaData(0,0,0,0),        6,  5,  3,  5 ).
 encomenda(  4,  3,  3,  3,  90, 'Rua da Senhora à Branca',  'S.Victor',             validaData(2020,1,22,13),   validaData(2020,1,30,13),   7,  3,  3,  25).
 encomenda(  5,  2,  2,  2,  60, 'Rua de Fiais',             'Paços de Ferreira',    validaData(2020,12,29,21),  validaData(2020,12,29,23),  2,  4,  2,  65).
 encomenda(  6,  8,  2,  8,  55, 'Rua Industrias',           'Amadora',              validaData(2020,5,10,6),    validaData(2020,5,12,6),    3,  2,  1,  12).
