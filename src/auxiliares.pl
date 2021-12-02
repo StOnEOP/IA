@@ -46,7 +46,14 @@ encomendaEntregue(validaData(A1,M1,D1,H1), validaData(A2,M2,D2,H2), P) :- (P == 
                                                                           (P == 1 -> A1 == A2, M1 == M2, D2-D1 =< 1);
                                                                           (P == 3 -> A1 == A2, M1 == M2, D2-D1 =< 3);
                                                                           (P == 7 -> A1 == A2, M1 == M2, D2-D1 =< 7).
-                                                                          
+
+encomendaEntregue2(validaData(A1,M1,D1,H1), P,R) :-    (P == 0 -> R = validaData(A1,M1,D1,H1));
+                                                                                (P == 2 -> R = validaData(A1,M1,D1,H1+2);
+                                                                                (P == 6 -> R = validaData(A1,M1,D1,H1+6);
+                                                                                (P == 1 -> R = validaData(A1,M1,D1+1,H1);
+                                                                                (P == 3 -> R = validaData(A1,M1,D1+3,H1);
+                                                                                (P == 7 -> R = validaData(A1,M1,D1+7,H1)). %e se mudar de mes?
+    
 
 
 % ----------------------------------------

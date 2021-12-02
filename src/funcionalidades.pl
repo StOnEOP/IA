@@ -107,9 +107,22 @@ parElementoOcurrencia([H|T],L) :-  contaElem(H,[H|T],Count),
 
 % ------------------------------------------
 % 9: Número de encomendas entregues e não entregues pela Green Distribution, num determinado período de tempo.
-entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), (A,B)) :- solucoes(validaData(A3,M3,D3,H3),encomenda(_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,_,_,_),L1),
-                                                                                contaNaoEntregues(L2,L1,B),
-                                                                                contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L2,A).
+entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), (A,B)) :- solucoes((validaData(A3,M3,D3,H3),validaData(A4,M4,D4,H4),P),encomenda(_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),validaData(A4,M4,D4,H4),P,_,_,_),L1),
+                                                                                verificaZeros(L1,L2,B),
+                                                                                encomendaEntregueAux(L2,A).
+                                                                                
+                                                                                
+                                                                                %contaNaoEntregues(L2,L1,B),
+                                                                                %contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L2,A).
+verificaZeros(([_,_,_|T]),B) :- verificaZeros(T,B).
+verificaZeros(([D1,validaData(0,0,0,0),P|T]),B) :-                                                                                  
+ 
+encomendaEntregueAux([],0).                                                      
+encomendaEntregueAux([(D1,D2,P)|T],A) :-    encomendaEntregue(D1,D2,P)->
+                                            (encomendaEntregueAux(T,A1),
+                                            A is A1+1); encomendaEntregueAux(T,A).
+
+
 
 contaNaoEntregues(_,[], 0).
 contaNaoEntregues(L,[validaData(A,_,_,_)|T], X) :- A > 0 -> apagaT(validaData(A,_,_,_),[validaData(A,_,_,_)|T],L), contaNaoEntregues(L,T, X1), X is X1+1;
