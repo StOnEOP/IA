@@ -3,6 +3,39 @@
 % --------------------
 
 % ----------------------------------------
+% Calcula o preço total da entrega: Peso, Volume, Transporte, Prazo, Preço -> {V, F}
+% Preço calculado da seguinte forma: 15% Peso + 15% Volume + 35% Transporte Utilizado + 35% Prazo de Entrega
+calculaPreco(Peso,Volume,Transporte,Prazo,Preco) :- multiplicacao(Peso,15,Peso1),
+                                                    multiplicacao(Volume,15,Volume1),
+                                                    multiplicacao(Transporte,35,Transporte1),
+                                                    calculaPrecoPrazo(Prazo,Prazo1), multiplicacao(Prazo1,35,Prazo2),
+                                                    adicao(Peso1,Volume1,Transporte1,Prazo2,Preco1),
+                                                    Preco is div(Preco1,100).
+
+% ----------------------------------------
+% Multiplicação de 2 números: X, Y, Resultado -> {V, F}
+multiplicacao(X,Y,R) :- R = X*Y.
+
+% ----------------------------------------
+% Adição de 4 números: X, Y, Z, W, Resultado -> {V, F}
+adicao(X,Y,Z,W,R) :- R = X+Y+Z+W.
+
+% ----------------------------------------
+% Calcula o preço apropriado para um determinado prazo de entrega: Prazo, Preco -> {V, F}
+% Imediato
+calculaPrecoPrazo(0, Preco) :- Preco = 15.
+% 1 Dia
+calculaPrecoPrazo(1,Preco) :- Preco = 5.
+% 2 Horas
+calculaPrecoPrazo(2,Preco) :- Preco = 10.
+% 3 Dias
+calculaPrecoPrazo(3,Preco) :- Preco = 3.
+% 6 Horas
+calculaPrecoPrazo(6,Preco) :- Preco = 7.
+% 7 Dias
+calculaPrecoPrazo(7,Preco) :- Preco = 1.
+
+% ----------------------------------------
 % Verifica se a lista só tem inteiros: Lista -> {V, F}
 validaListaInteger([]).
 validaListaInteger([H|T]) :- integer(H), validaListaInteger(T).
