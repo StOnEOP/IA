@@ -11,13 +11,13 @@
 % ------------------------------------------
 % 1: Estafeta que utilizou mais vezes um meio de transporte mais ecológico.
 estafetaEcologico(Elem) :-  solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,_,1),L),
-                            maxOcurr(_,L,Elem).
+                            maxOcorr(_,L,Elem).
 
 
-maxOcurr(0,[],[]).
-maxOcurr(Max,[H|T],L) :-    contaElem(H,[H|T],Count),
+maxOcorr(0,[],[]).
+maxOcorr(Max,[H|T],L) :-    contaElem(H,[H|T],Count),
                             apagaT(H,[H|T],NewList), 
-                            maxOcurr(NewMax,NewList,Ls),
+                            maxOcorr(NewMax,NewList,Ls),
                             (Count > NewMax -> Max = Count, L = H;
                             Max = NewMax, L = Ls), !.
                         
@@ -77,14 +77,14 @@ media_Lista(L,Media) :- sum_Lista(L,Sum),
 % 7: Número total de entregas pelos diferentes meios de transporte, num determinado intervalo de tempo.
 totalEntregasTransporte(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted) :-  solucoes((validaData(A3,M3,D3,H3),Transporte),encomenda(_,_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,Transporte),L1),
                                                                                     filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L1,L2),
-                                                                                    parElementoOcurrencia(L2,L3),
+                                                                                    parElementoOcorrencia(L2,L3),
                                                                                     sort(L3,Sorted).                                             
 
 % ------------------------------------------
 % 8: Número total de entregas pelos estafetas, num determinado intervalo de tempo.
 totalEntregasEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted) :-    solucoes((validaData(A3,M3,D3,H3),Estafeta),encomenda(_,_,Estafeta,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,_),L1),
                                                                                     filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L1,L2),
-                                                                                    parElementoOcurrencia(L2,L3),
+                                                                                    parElementoOcorrencia(L2,L3),
                                                                                     sort(L3,Sorted).                                             
 
 % ------------------------------------------

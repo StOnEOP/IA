@@ -31,7 +31,6 @@
 % Classificação da entrega: 0 a 5.
 % Transporte: bicicleta - 1 , moto - 2 , carro - 3.
 % Preço: calculado através de peso, volume, transporte utilizado (menos ecológico = mais caro) e o prazo de entrega (mais curto = mais caro).
-%calculaPreco(Peso,Volume,Transporte,Prazo,Preco)
 +encomenda(IDEncomenda,IDCliente,IDEstafeta,Peso,Volume,Rua,Freguesia,Data,Prazo,Classificacao,Transporte) :: (integer(IDEncomenda)
                                                                                                                     ,integer(IDCliente)
                                                                                                                     ,integer(IDEstafeta)

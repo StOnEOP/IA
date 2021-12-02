@@ -108,14 +108,14 @@ adicionar(X,L,[X|L]).
 
 % ----------------------------------------
 % Cria uma lista de pares (Elem,NºOcurrenciaElemento) : L -> {V, F}
-parElementoOcurrencia([],[]).
-parElementoOcurrencia([H|T],L) :-   contaElem(H,[H|T],Count),
+parElementoOcorrencia([],[]).
+parElementoOcorrencia([H|T],L) :-   contaElem(H,[H|T],Count),
                                     apagaT(H,[H|T],NewList),
-                                    parElementoOcurrencia(NewList,Ls),
+                                    parElementoOcorrencia(NewList,Ls),
                                     adicionar((H,Count),Ls,L), !.
 
 % ----------------------------------------
-% Apaga todas as ocurrencias de um elemento numa lista : Elem, L -> {V, F}
+% Apaga todas as ocorrencias de um elemento numa lista : Elem, L -> {V, F}
 apagaT(_,[],[]).
 apagaT(X,[X|R],L) :- apagaT(X,R,L).
 apagaT(X,[Y|R],[Y|L]) :- X \= Y, apagaT(X,R,L).
