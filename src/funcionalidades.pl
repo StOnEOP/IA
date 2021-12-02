@@ -107,35 +107,34 @@ parElementoOcurrencia([H|T],L) :-  contaElem(H,[H|T],Count),
 
 % ------------------------------------------
 % 9: Número de encomendas entregues e não entregues pela Green Distribution, num determinado período de tempo.
-entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), (A,B)) :- solucoes((validaData(A3,M3,D3,H3),validaData(A4,M4,D4,H4),P),encomenda(_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),validaData(A4,M4,D4,H4),P,_,_,_),L1),
-                                                                                verificaZeros(L1,L2,B),
-                                                                                encomendaEntregueAux(L2,A).
+entregueENaoEntregue(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), A,B) :- solucoes((validaData(A3,M3,D3,H3),validaData(A4,M4,D4,H4),P),encomenda(_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),validaData(A4,M4,D4,H4),P,_,_,_),L1),
+                                                                            filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), L1, L2),
+                                                                            verificaZeros(validaData(A2,M2,D2,H2),L2,B),
+                                                                            contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), L2, A).
+                                                                            
                                                                                 
                                                                                 
-                                                                                %contaNaoEntregues(L2,L1,B),
-                                                                                %contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L2,A).
-verificaZeros(([_,_,_|T]),B) :- verificaZeros(T,B).
-verificaZeros(([D1,validaData(0,0,0,0),P|T]),B) :-                                                                                 
+                                                            
+verificaZeros(_,[],0).
+verificaZeros(validaData(A1,M1,D1,H1),[(D2,validaData(0,0,0,0),P)|T],B) :- nao(encomendaEntregue(D2, validaData(A1,M1,D1,H1), P)) ->
+                                                                           verificaZeros(validaData(A1,M1,D1,H1),T,B1), B is B1 + 1;
+                                                                           verificaZeros(validaData(A1,M1,D1,H1),T,B).
+
+verificaZeros(validaData(A1,M1,D1,H1),[(_,_,_)|T],B) :- verificaZeros(validaData(A1,M1,D1,H1),T,B).                                                                                                                                                       
  
-encomendaEntregueAux([],0).                                                      
-encomendaEntregueAux([(D1,D2,P)|T],A) :-    encomendaEntregue(D1,D2,P)->
-                                            (encomendaEntregueAux(T,A1),
-                                            A is A1+1); encomendaEntregueAux(T,A).
+filtraData(_,_,[],[]).
+filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(D3,D4,P)|R],L2) :- (comparaData(validaData(A1,M1,D1,H1),D3),
+                                                                                nao(comparaData(validaData(A2,M2,D2,H2),D3))) ->
+                                                                                filtraData(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L1),
+                                                                                adicionar((D3,D4,P),L1,L2);
+                                                                                filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L2).                                              
 
-
-
-contaNaoEntregues(_,[], 0).
-contaNaoEntregues(L,[validaData(A,_,_,_)|T], X) :- A > 0 -> apagaT(validaData(A,_,_,_),[validaData(A,_,_,_)|T],L), contaNaoEntregues(L,T, X1), X is X1+1;
-                                                            contaNaoEntregues(L,T,X).
-
-
-contaEntregueDentroPrazo(_, _, [], 0).
-contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2), [validaData(A3,M3,D3,H3)|T], X) :- (comparaData(validaData(A1,M1,D1,H1),validaData(A3,M3,D3,H3)),  
-                                                                                                            nao(comparaData(validaData(A2,M2,D2,H2),validaData(A3,M3,D3,H3)))) ->
-                                                                                                            contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,X1),T, X is X1+1;
-                                                                                                            contaEntregueDentroPrazo(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,X1)).
-                                                                                                            
-
+contaDatasEntregues(_,_,[],0).
+contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(_,validaData(0,0,0,0),_)|T],A) :- contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,A).     
+contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(_,DE,_)|T],B) :- (comparaData(validaData(A1,M1,D1,H1),DE),
+                                                                                        nao(comparaData(validaData(A2,M2,D2,H2),DE))) ->                                                                                                                            
+                                                                                        contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,B1), B is B1+1;
+                                                                                        contaDatasEntregues(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),T,B).
                                                               
 % ------------------------------------------
 % 10: Peso total transportado por cada estafeta, num determinado dia.

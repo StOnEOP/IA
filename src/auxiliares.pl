@@ -33,10 +33,12 @@ validaData(Ano,2,Dia,Hora) :-   integer(Ano), integer(Dia), integer(Hora),
                                 Dia >= 1, Dia =< 29, Hora >= 0, Hora =< 23.
 
 % Compara datas: Data, Data -> {V, F}
+
 comparaData(validaData(Ano,Mes,Dia,Hora), validaData(Ano2,Mes2,Dia2,Hora2)) :- (Ano-Ano2 < 0;
                                                                                 Ano-Ano2 =:= 0, Mes-Mes2 < 0;
                                                                                 Ano-Ano2 =:= 0, Mes-Mes2 =:= 0, Dia-Dia2 < 0;
                                                                                 Ano-Ano2 =:= 0, Mes-Mes2 =:= 0, Dia-Dia2 =:= 0, Hora-Hora2 =< 0).
+                                                                                
 
 % ----------------------------------------
 % Verifica se a Encomenda foi entregue no prazo establecido : Data, Data, Prazo -> {V, F}
@@ -46,15 +48,6 @@ encomendaEntregue(validaData(A1,M1,D1,H1), validaData(A2,M2,D2,H2), P) :- (P == 
                                                                           (P == 1 -> A1 == A2, M1 == M2, D2-D1 =< 1);
                                                                           (P == 3 -> A1 == A2, M1 == M2, D2-D1 =< 3);
                                                                           (P == 7 -> A1 == A2, M1 == M2, D2-D1 =< 7).
-
-encomendaEntregue2(validaData(A1,M1,D1,H1), P,R) :-    (P == 0 -> R = validaData(A1,M1,D1,H1));
-                                                                                (P == 2 -> R = validaData(A1,M1,D1,H1+2);
-                                                                                (P == 6 -> R = validaData(A1,M1,D1,H1+6);
-                                                                                (P == 1 -> R = validaData(A1,M1,D1+1,H1);
-                                                                                (P == 3 -> R = validaData(A1,M1,D1+3,H1);
-                                                                                (P == 7 -> R = validaData(A1,M1,D1+7,H1)). %e se mudar de mes?
-    
-
 
 % ----------------------------------------
 % Extensão do meta-predicado nao: Questao -> {V, F}
