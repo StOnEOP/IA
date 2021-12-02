@@ -10,7 +10,7 @@
 
 % ------------------------------------------
 % 1: Estafeta que utilizou mais vezes um meio de transporte mais ecológico.
-estafetaEcologico(Elem) :-  solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,1,_),L),
+estafetaEcologico(Elem) :-  solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,_,1,_),L),
                             maxOcurr(_,L,Elem).
 
 contaElem(_,[],0).
@@ -31,21 +31,20 @@ maxOcurr(Max,[H|T],L) :-    contaElem(H,[H|T],Count),
                         
 % ------------------------------------------
 % 2: Estafetas que entregaram determinadas encomendas a um determinado cliente.
-estafetasEncomendaCliente(LE,Cliente,L) :-  solucoes(Encomenda,encomenda(Encomenda,Cliente,_,_,_,_,_,_,_,_,_,_),S),
+estafetasEncomendaCliente(LE,Cliente,L) :-  solucoes((Encomenda,Estafeta),encomenda(Encomenda,Cliente,Estafeta,_,_,_,_,_,_,_,_,_,_),S),
                                             verificarLE(LE,S,L).
 
-verificarLE([],_,_).
-verificarLE([H|T],S,L) :- membro(H,S), verificarLE2(H,L,L), verificarLE(T,S,L).
-verificarLE2(X,L,L) :- membro(X,L), !.
-verificarLE2(X,L,[X|L]).
+verificarLE(_,[],[]).
+verificarLE(S,[(A,_)|T],L) :- nao(membro(A,S)), verificarLE(S,T,L).
+verificarLE(S,[(A,B)|T],[B|L]) :- membro(A,S), verificarLE(S,T,L).
 
 % ------------------------------------------
 % 3: Clientes servidos por um determinado estafeta.
-clientesEstafeta(L,Estafeta) :- solucoes(Cliente,encomenda(_,Cliente,Estafeta,_,_,_,_,_,_,_,_,_),L).
+clientesEstafeta(L,Estafeta) :- solucoes(Cliente,encomenda(_,Cliente,Estafeta,_,_,_,_,_,_,_,_,_,_),L).
 
 % ------------------------------------------
 % 4: Valor faturado pela Green Distribution num determinado dia.
-faturaDia(validaData(A,M,D,_),Sum) :-   solucoes(Preco,encomenda(_,_,_,_,_,_,_,validaData(A,M,D,_),_,_,_,Preco),L),
+faturaDia(validaData(A,M,D,_),Sum) :-   solucoes(Preco,encomenda(_,_,_,_,_,_,_,_,validaData(A,M,D,_),_,_,_,Preco),L),
                                         sum_Lista(L,Sum).
 
 sum_Lista([],0).
@@ -54,11 +53,11 @@ sum_Lista([X|L],Sum) :- sum_Lista(L,Sum1),
 
 % ------------------------------------------
 % 5: Zonas com maior volume de entregas por parte da Green Distribution.
-zonaMaisVolume(Max,Zona) :- solucoes(Freguesia,encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_),L),
+zonaMaisVolume(Max,Zona) :- solucoes(Freguesia,encomenda(_,_,_,_,_,_,Freguesia,_,_,_,_,_,_),L),
                             sort(0,@<,L,Ls),
                             encomendaComMaisVolume(Max,Ls,Zona).
 
-contaTodosOsVolumes(Freguesia,Sum) :-   solucoes(Volume,encomenda(_,_,_,_,Volume,_,Freguesia,_,_,_,_,_),L),
+contaTodosOsVolumes(Freguesia,Sum) :-   solucoes(Volume,encomenda(_,_,_,_,Volume,_,Freguesia,_,_,_,_,_,_),L),
                                         sum_Lista(L,Sum).
 
 encomendaComMaisVolume(0,[],[]).
@@ -71,7 +70,7 @@ encomendaComMaisVolume(Max,[Freguesia|T],L) :-  contaTodosOsVolumes(Freguesia,Co
                                                                                     
 % ------------------------------------------
 % 6: Classificação média de satisfação dos clientes de um determinado estafeta.
-estafetaMedia(Estafeta,Media) :-    solucoes(Classificacao,encomenda(_,_,Estafeta,_,_,_,_,_,_,Classificacao,_,_),L),
+estafetaMedia(Estafeta,Media) :-    solucoes(Classificacao,encomenda(_,_,Estafeta,_,_,_,_,_,_,_,Classificacao,_,_),L),
                                     media_Lista(L,Media).
 
 media_Lista(L,Media) :- sum_Lista(L,Sum),
@@ -81,38 +80,29 @@ media_Lista(L,Media) :- sum_Lista(L,Sum),
 
 % ------------------------------------------
 % 7: Número total de entregas pelos diferentes meios de transporte, num determinado intervalo de tempo.
-totalEntregasTransporte(Data1,Data2,X,Y,Z) :-   solucoes((Data,Transporte),encomenda(_,_,_,_,_,_,_,Data,_,_,Transporte,_),L1),
-                                                filtraData(Data1,Data2,L1,L2),
-                                                somaTransportes(X,Y,Z,L2).
+totalEntregasTransporte(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted) :-  solucoes((validaData(A3,M3,D3,H3),Transporte),encomenda(_,_,_,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,Transporte,_),L1),
+                                                                                    filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L1,L2),
+                                                                                    parElementoOcurrencia(L2,L3),
+                                                                                    sort(L3,Sorted).
 
-filtraData(_,_,[],[]).
-filtraData(Data1,Data2,[(D,T)|R],L2) :- comparaData(Data1,D),
-                                        nao(comparaData(Data2,D)),
-                                        filtraData(Data1,Data2,R,L1),
-                                        adicionar((D,T),L1,L2).
-
-somaTransportes(0,0,0,[]).
-somaTransportes(X,Y,Z,[(_,T)|R]) :- somaTransportes(X1,Y1,Z1,R),
-                                    (T == 1 -> X is X1+1; (T == 2 -> Y is Y1+1; (T == 3 -> Z is Z1+1))).
+filtraDataElemento(_,_,[],[]).
+filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(D,E)|R],L2) :- (comparaData(validaData(A1,M1,D1,H1),D),
+                                                                                    nao(comparaData(validaData(A2,M2,D2,H2),D))) ->
+                                                                                    filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L1),
+                                                                                    adicionar(E,L1,L2);
+                                                                                    filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L2).                                              
 
 % ------------------------------------------
 % 8: Número total de entregas pelos estafetas, num determinado intervalo de tempo.
-totalEntregasEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted) :-    solucoes((validaData(A3,M3,D3,H3),Estafeta),encomenda(_,_,Estafeta,_,_,_,_,validaData(A3,M3,D3,H3),_,_,_,_),L1),
-                                                                                    filtraDataEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L1,L2),
-                                                                                    numeroEntregas(L2,L3),
-                                                                                    sort(L3,Sorted).
+totalEntregasEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),Sorted) :-    solucoes((validaData(A3,M3,D3,H3),Estafeta),encomenda(_,_,Estafeta,_,_,_,_,_,validaData(A3,M3,D3,H3),_,_,_,_),L1),
+                                                                                    filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),L1,L2),
+                                                                                    parElementoOcurrencia(L2,L3),
+                                                                                    sort(L3,Sorted).                                             
 
-filtraDataEstafeta(_,_,[],[]).
-filtraDataEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(D,E)|R],L2) :- (comparaData(validaData(A1,M1,D1,H1),D),
-                                                                                    nao(comparaData(validaData(A2,M2,D2,H2),D))) ->
-                                                                                    filtraDataEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L1),
-                                                                                    adicionar(E,L1,L2);
-                                                                                    filtraDataEstafeta(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L2).                                              
-
-numeroEntregas([],[]).
-numeroEntregas([H|T],L) :-  contaElem(H,[H|T],Count),
+parElementoOcurrencia([],[]).
+parElementoOcurrencia([H|T],L) :-  contaElem(H,[H|T],Count),
                             apagaT(H,[H|T],NewList),
-                            numeroEntregas(NewList,Ls),
+                            parElementoOcurrencia(NewList,Ls),
                             adicionar((H,Count),Ls,L), !.
 
 % ------------------------------------------
@@ -126,7 +116,7 @@ numeroEntregas([H|T],L) :-  contaElem(H,[H|T],Count),
 %                                                                                            nao(comparaData(validaData(A2,M2,D2,H2),D))), L.
 % ------------------------------------------
 % 10: Peso total transportado por cada estafeta, num determinado dia.
-estafetaPeso(validaData(A,M,D,_),Sol) :-    solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,validaData(A,M,D,_),_,_,_,_),L),
+estafetaPeso(validaData(A,M,D,_),Sol) :-    solucoes(Estafeta,encomenda(_,_,Estafeta,_,_,_,_,_,validaData(A,M,D,_),_,_,_,_),L),
                                             sort(0,@<,L,Ls),
                                             estafetaPesoAux(validaData(A,M,D,_),Sol,Ls).
 
@@ -138,7 +128,7 @@ estafetaPesoAux(validaData(A,M,D,_),L,[Estafeta|T]) :-  contaTodosOsPesos(valida
 adicionar(X,[],[X]).                                              
 adicionar(X,L,[X|L]).
 
-contaTodosOsPesos(validaData(A,M,D,_),Estafeta,Sum) :-  solucoes(Peso,encomenda(_,_,Estafeta,Peso,_,_,_,validaData(A,M,D,_),_,_,_,_),L),
+contaTodosOsPesos(validaData(A,M,D,_),Estafeta,Sum) :-  solucoes(Peso,encomenda(_,_,Estafeta,Peso,_,_,_,_,validaData(A,M,D,_),_,_,_,_),L),
                                                         sum_Lista(L,Sum).
 
 % ------------------------------------------
