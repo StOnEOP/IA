@@ -27,21 +27,22 @@
 
 % ------------------------------------------
 % Invariantes estruturais para o predicado encomenda.
-% Prazo de entrega: imediato , 2h, 6h, 1 dia, 3 dias, 7 dias.
+% Prazo de entrega: imediato = 0 , 2h = 2, 6h = 6, 1 dia = 1, 3 dias = 3, 7 dias = 7.
 % Classificação da entrega: 0 a 5.
 % Transporte: bicicleta - 1 , moto - 2 , carro - 3.
 % Preço: calculado através de peso, volume, transporte utilizado (menos ecológico = mais caro) e o prazo de entrega (mais curto = mais caro).
-+encomenda(IDEncomenda,IDCliente,IDEstafeta,Peso,Volume,Rua,Freguesia,Data,Prazo,Classificacao,Transporte,Preco) :: (integer(IDEncomenda)
-                                                                                                                    ,integer(IDCliente)
-                                                                                                                    ,integer(IDEstafeta)
-                                                                                                                    ,integer(Peso)
-                                                                                                                    ,integer(Volume)
-                                                                                                                    ,atom(Rua)
-                                                                                                                    ,atom(Freguesia)
-                                                                                                                    ,validaData(Data)
-                                                                                                                    ,validaPrazo(Prazo)
-                                                                                                                    ,validaClassificacao(Classificacao)
-                                                                                                                    ,validaTransporte(Transporte)
-                                                                                                                    ,calculaPreco(Preco)).
++encomenda(IDEncomenda,IDCliente,IDEstafeta,Peso,Volume,Rua,Freguesia,DataPedido,DataEntrega,Prazo,Classificacao,Transporte) :: (integer(IDEncomenda)
+                                                                                                                                ,integer(IDCliente)
+                                                                                                                                ,integer(IDEstafeta)
+                                                                                                                                ,integer(Peso)
+                                                                                                                                ,integer(Volume)
+                                                                                                                                ,atom(Rua)
+                                                                                                                                ,atom(Freguesia)
+                                                                                                                                ,validaData(DataPedido)
+                                                                                                                                ,validaData(DataEntrega)
+                                                                                                                                ,validaPrazo(Prazo)
+                                                                                                                                ,validaClassificacao(Classificacao)
+                                                                                                                                ,validaTransporte(Transporte)).
+                                                                                                                    
 
 % ------------------------------------------

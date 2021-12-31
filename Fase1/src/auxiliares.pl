@@ -22,6 +22,8 @@ adicao(X,Y,Z,W,R) :- R = X+Y+Z+W.
 
 % ----------------------------------------
 % Calcula o preço apropriado para um determinado prazo de entrega: Prazo, Preco -> {V, F}
+% Imediato
+calculaPrecoPrazo(0, Preco) :- Preco = 15.
 % 1 Dia
 calculaPrecoPrazo(1,Preco) :- Preco = 5.
 % 2 Horas
@@ -64,11 +66,59 @@ validaData(Ano,2,Dia,Hora) :-   integer(Ano), integer(Dia), integer(Hora),
                                 Dia >= 1, Dia =< 29, Hora >= 0, Hora =< 23.
 
 % Compara datas: Data, Data -> {V, F}
+
 comparaData(validaData(Ano,Mes,Dia,Hora), validaData(Ano2,Mes2,Dia2,Hora2)) :- (Ano-Ano2 < 0;
                                                                                 Ano-Ano2 =:= 0, Mes-Mes2 < 0;
                                                                                 Ano-Ano2 =:= 0, Mes-Mes2 =:= 0, Dia-Dia2 < 0;
                                                                                 Ano-Ano2 =:= 0, Mes-Mes2 =:= 0, Dia-Dia2 =:= 0, Hora-Hora2 =< 0).
-                                
+                                                                                
+
+% ----------------------------------------
+% Verifica se a Encomenda foi entregue no prazo establecido : Data, Data, Prazo -> {V, F}
+encomendaEntregue(validaData(A1,M1,D1,H1), validaData(A2,M2,D2,H2), P) :- (P == 0 -> A1 == A2, M1 == M2, D1 == D2, H1 == H2);
+                                                                          (P == 2 -> A1 == A2, M1 == M2, D1 == D2, H2-H1 =< 2);
+                                                                          (P == 6 -> A1 == A2, M1 == M2, D1 == D2, H2-H1 =< 6);
+                                                                          (P == 1 -> A1 == A2, M1 == M2, D2-D1 =< 1);
+                                                                          (P == 3 -> A1 == A2, M1 == M2, D2-D1 =< 3);
+                                                                          (P == 7 -> A1 == A2, M1 == M2, D2-D1 =< 7).
+% ----------------------------------------
+% Conta elementos : Elem, L -> {V, F}
+contaElem(_,[],0).
+contaElem(X,[X|T],Count) :- contaElem(X,T,Count1), Count is Count1+1.
+contaElem(X,[_|T],Count) :- contaElem(X,T,Count).
+
+% ----------------------------------------
+% Somatorio de uma lista : L -> {V, F}
+sum_Lista([],0).
+sum_Lista([X|L],Sum) :- sum_Lista(L,Sum1), 
+                        Sum is X + Sum1.
+
+% ----------------------------------------
+% Adiciona os elementos com datas entre o intervalo de tempo dado numa nova lista : Data, Data, L -> {V, F}
+filtraDataElemento(_,_,[],[]).
+filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),[(D,E)|R],L2) :- (comparaData(validaData(A1,M1,D1,H1),D),
+                                                                                    nao(comparaData(validaData(A2,M2,D2,H2),D))) ->
+                                                                                    filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L1),
+                                                                                    adicionar(E,L1,L2);
+                                                                                    filtraDataElemento(validaData(A1,M1,D1,H1),validaData(A2,M2,D2,H2),R,L2). 
+% ----------------------------------------
+% Adiciona um elemento ao inicio da lista : Elem, L -> {V, F}
+adicionar(X,[],[X]).                                              
+adicionar(X,L,[X|L]).
+
+% ----------------------------------------
+% Cria uma lista de pares (Elem,NºOcurrenciaElemento) : L -> {V, F}
+parElementoOcorrencia([],[]).
+parElementoOcorrencia([H|T],L) :-   contaElem(H,[H|T],Count),
+                                    apagaT(H,[H|T],NewList),
+                                    parElementoOcorrencia(NewList,Ls),
+                                    adicionar((H,Count),Ls,L), !.
+
+% ----------------------------------------
+% Apaga todas as ocorrencias de um elemento numa lista : Elem, L -> {V, F}
+apagaT(_,[],[]).
+apagaT(X,[X|R],L) :- apagaT(X,R,L).
+apagaT(X,[Y|R],[Y|L]) :- X \= Y, apagaT(X,R,L).
 
 % ----------------------------------------
 % Extensão do meta-predicado nao: Questao -> {V, F}
