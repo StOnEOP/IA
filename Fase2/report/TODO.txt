@@ -1,0 +1,13 @@
+1. Implementar algoritmos de procura:
+        -> Profundidade (DPS)
+        -> Largura (BFS)
+        -> Busca iterativa limitada em profundidade
+        -> Gulosa
+        -> Estrela (A*)
+
+2. Começar construção do grafo:
+        -> Escolher cenário minimamente realista
+
+
+
+PS: Apagar alíneas acima sempre que completadas
