@@ -6,9 +6,6 @@
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa em profundidade primeiro com custo
 %---------------------------------------------------------------------------------------------------------------------------------------
-%    resolve_pp_c(s,C,Custo).
-
-
 resolve_pp_c(Nodo, [Nodo|Caminho], C) :-
 	profundidadeprimeiro(Nodo, [Nodo], Caminho, C).
 
@@ -32,7 +29,6 @@ melhor(Nodo, S, Custo) :- findall((SS, CC), resolve_pp_c(Nodo, SS, CC), L),
 minimo([(P,X)],(P,X)).
 minimo([(Px,X)|L],(Py,Y)):- minimo(L,(Py,Y)), X>Y. 
 minimo([(Px,X)|L],(Px,X)):- minimo(L,(Py,Y)), X=<Y.
-
 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa A Estrela 
@@ -67,7 +63,6 @@ expande_aestrela_distancia(Caminho, ExpCaminhos) :-
 	findall(NovoCaminho, adjacente_distancia(Caminho,NovoCaminho), ExpCaminhos).
 	
 % --- tempo 
-
 aestrela_tempo(Caminhos, Caminho) :-
 	obtem_melhor_tempo(Caminhos, Caminho),
 	Caminho = [Nodo|_]/_/_,
@@ -94,7 +89,6 @@ expande_aestrela_tempo(Caminho, ExpCaminhos) :-
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa Gulosa
 %---------------------------------------------------------------------------------------------------------------------------------------
-
 resolve_gulosa(Nodo,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
 	estima(Nodo, EstimaD, EstimaT),
 	agulosa_distancia_g([[Nodo]/0/EstimaD], InvCaminho/CustoDist/_),
@@ -163,10 +157,10 @@ adjacente_tempo([Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/NovoCusto/Estima
 	\+ member(ProxNodo, Caminho),
 	NovoCusto is Custo + PassoTempo,
 	estima(ProxNodo, _ , EstimaTempo).
-%---------------------------------------------------------------------------------------------------------------------------------------
-% Depth-first
-%---------------------------------------------------------------------------------------------------------------------------------------
 
+%---------------------------------------------------------------------------------------------------------------------------------------
+% Pesquisa em Profundidade (DPS)
+%---------------------------------------------------------------------------------------------------------------------------------------
 resolvedf(Solucao) :- inicial(InicialEstado), resolvedf(IncialEstado, [InicialEstado], Solucao).
 
 resolvedf(Estado, Historico, []) :- final(Estado),!, reverse(Historico,L), write(Historico).
@@ -181,9 +175,8 @@ minimo([(Px,X)|L], (Py,Y)) :- minimo(L,(Py,Y)), X > Y.
 minimo([(Px,X)|L], (Px,X)) :- minimo(L,(Py,Y)), X=< Y.
 
 %---------------------------------------------------------------------------------------------------------------------------------------
-% Breath-first
+% Pesquisa em Largura (BFS)
 %---------------------------------------------------------------------------------------------------------------------------------------
-
 resolvebf(Solucao) :- bfs_M(jarros(0,0), jarros(_,4), Solucao).
 
 bfs_M(Estado1, EstadoF,Solucao) :- bfs_M2(EstadoF, [[EstadoI]], Solucao).
@@ -199,7 +192,6 @@ bfs_M2(EstadoF, [EstadosA|Outros], Solucao) :-
     bfs_M2(EstadoF, Todos, Solucao).    
 
 %---------------------------------predicados auxiliares
-
 inverso(Xs, Ys):-
 	inverso(Xs, [], Ys).
 
