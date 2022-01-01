@@ -1,13 +1,10 @@
-1. Implementar algoritmos de procura:
-        -> Profundidade (DPS)
-        -> Largura (BFS)
-        -> Busca iterativa limitada em profundidade
-        -> Gulosa
-        -> Estrela (A*)
+1. Implementar estimas em relação:
+        -> Ao tempo (algoritmo descrito no enunciado)
 
-2. Começar construção do grafo:
-        -> Escolher cenário minimamente realista
+2. Adaptar algoritmos de procura ao nosso problema
 
+3. Começar métodos necessários (funcionalidades)
 
-
-PS: Apagar alíneas acima sempre que completadas
+Informações:
+        -> Ordenado por importância (número menor = mais importante)
+        -> Apagar alíneas acima sempre que completadas
