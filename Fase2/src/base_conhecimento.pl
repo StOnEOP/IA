@@ -4,8 +4,8 @@
 
 % ------------------------------------------
 % Aresta: LocalidadeOrigem, LocalidadeDestino, CustoDistancia -> {V,F}
-aresta(saovictor, pinheirovelho, 4).
-aresta(saovictor, gualtar, 3).
+aresta(saovictor, pinheirovelho, 4).  
+aresta(saovictor, gualtar, 3). 
 aresta(saovictor, saovicente, 4).
 aresta(pinheirovelho, regadas, 3).
 aresta(gualtar, regadas, 4).
@@ -25,6 +25,9 @@ aresta(saopedromerelim, vilaprado, 3).
 aresta(vilaprado, lago, 7).
 aresta(lago, amares, 7).
 
+ligacao(X,Y) :- aresta(X,Y,_).
+ligacao(X,Y) :- aresta(Y,X,_).
+
 % ------------------------------------------
 % estimaD: Localidade, estimaDistância -> {V,F}
 estimaD(saovictor, 10).
@@ -39,7 +42,14 @@ estimaD(palmeira, 8).
 estimaD(saopedromerelim, 11).
 estimaD(vilaprado, 10).
 estimaD(lago, 6).
+estimaD(amares, 0).
 
 % ------------------------------------------
 % Objetivo: Localidade -> {V,F}
 objetivo(amares).
+
+% ------------------------------------------
+% Objetivo: Veículo, Peso, Velocidade Média -> {V,F}
+transporte(bicicleta, 5, 10).
+transporte(moto, 20, 35).
+transporte(carro, 100, 25).

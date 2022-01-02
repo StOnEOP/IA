@@ -1,9 +1,4 @@
-1. Implementar estimas em relação:
-        -> Ao tempo (algoritmo descrito no enunciado)
-
-2. Adaptar algoritmos de procura ao nosso problema
-
-3. Começar métodos necessários (funcionalidades)
+1. Começar métodos necessários (funcionalidades)
 
 Informações:
         -> Ordenado por importância (número menor = mais importante)

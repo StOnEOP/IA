@@ -8,54 +8,65 @@
 
 % ------------------------------------------
 % Escolha do veículo a usar tendo em conta o peso da entrega
-% escolheVeiculo: TempoMáximo, Peso, Velocidade média -> {V,F}
+% escolheVeiculo: Distancia, TempoMáximo, Peso, Velocidade média -> {V,F}
+escolheVeiculo(Distancia, TempoMaximo, Peso, VelocidadeMedia, Veiculo) :-
+	velocidadeBicicleta(Peso, VB),
+	velocidadeMoto(Peso, VM),
+	velocidadeCarro(Peso, VC),
+	
+	(TempoMaximo > Distancia/VB, Peso =< 5 -> Veiculo is 1, VelocidadeMedia is VB, !;
+	TempoMaximo > Distancia/VM, Peso =< 20 -> Veiculo is 2, VelocidadeMedia is VM, !;
+	TempoMaximo > Distancia/VC, Peso =< 100 -> Veiculo is 3, VelocidadeMedia is VC, !).
 
+velocidadeBicicleta(Peso, V) :-
+	V is (10 - Peso*0.7).
+
+velocidadeMoto(Peso, V) :-
+	V is (35 - Peso*0.5).
+
+velocidadeCarro(Peso, V) :-
+	V is (25 - Peso*0.1).
 
 % ------------------------------------------
 % Cálculo da estima do tempo (em minutos)
 % estimaT: estimaDistância, Velocidade média, EstimaTempo -> {V,F}
-estimaT(EstimaD, VelocidadeMedia, EstimaT) :-
-	EstimaTHoras is EstimaD/VelocidadeMedia,
-	EstimaT is EstimaTHoras*60.
+estimaT(Localidade, Veiculo, EstimaT) :-
+	estimaD(Localidade, X),
+	transporte(Veiculo, _, V),
+	EstimaT is X/V.
+
+custoT(Localidade, ProxLocadidade, Veiculo, CustoT) :-
+	aresta(Localidade,ProxLocadidade,X),
+	transporte(Veiculo, _, V),
+	CustoT is X/V.
+
 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Largura (BFS)
 %---------------------------------------------------------------------------------------------------------------------------------------
-resolvebf(Solucao) :-
-    bfs_M(jarros(0,0), jarros(_,4), Solucao).
+bfs(EstadoI, EstadoF, Solucao) :-
+    bfs2(EstadoF, [[EstadoI]], Solucao).
 
-bfs_M(Estado1, EstadoF, Solucao) :-
-    bfs_M2(EstadoF, [[EstadoI]], Solucao).
-
-bfs_M2(EstadoF, [[EstadoF|T]|_], Solucao) :-
+bfs2(EstadoF, [[EstadoF|T]|_], Solucao) :-
     reverse([EstadoF|T], Solucao).
-bfs_M2(EstadoF, [EstadosA|Outros], Solucao) :-
+bfs2(EstadoF, [EstadosA|Outros], Solucao) :-
     EstadosA=[Act|_],
-    findall([EstadoX|EstadosA],(EstadoF\==Act, transicao(Act,aresta,EstadoX), \+member(EstadoX,EstadosA)),Novos),
+    findall([EstadoX|EstadosA],(EstadoF\==Act, ligacao(Act,EstadoX), \+member(EstadoX,EstadosA)),Novos),
     append(Outros,Novos,Todos),
-    bfs_M2(EstadoF, Todos, Solucao).
+    bfs2(EstadoF, Todos, Solucao).
 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Profundidade (DFS)
 %---------------------------------------------------------------------------------------------------------------------------------------
-resolvedf(Solucao) :-
-    inicial(InicialEstado),
-    resolvedf(IncialEstado, [InicialEstado], Solucao).
-resolvedf(Estado, Historico, []) :-
-    final(Estado),!,
-    reverse(Historico,L),
-    write(Historico).
-resolvedf(Estado, Historico, [aresta|Solucao]) :-
-    transicao(Estado, aresta, Estado1),
-    nao(membro(Estado1, Historico)),
-    resolvedf(Estado1, [Estado1|Historico], Solucao).
+dfs(EstadoI, EstadoF, Solucao) :-
+	dfs2(EstadoI, EstadoF, [EstadoI], Solucao).
 
-todos(L) :-
-    findall((S,C), (resolvedf(S), length(S,C)), L).
-
-melhor(S, Custo) :-
-    findall((S,C), (resolvedf(S), length(S,C)), L),
-    minimo(L,(S, Custo)).
+dfs2(EstadoF,EstadoF,EstadosA,Solucao) :-
+	reverse(EstadosA, Solucao).
+dfs2(Act, EstadoF, EstadosA, Solucao) :-
+	ligacao(Act, EstadoX),
+	\+member(EstadoX, EstadosA),
+	dfs2(EstadoX, EstadoF, [EstadoX|EstadosA], Solucao).
 
 % ------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Profundidade primeiro com custo
@@ -75,6 +86,7 @@ adjacente(Nodo, ProxNodo, C) :-
 adjacente(Nodo, ProxNodo, C) :-
 	aresta(ProxNodo, Nodo, C).
 
+% MAIN CALL
 melhor(Nodo, S, Custo) :-
     findall((SS, CC),
     resolve_pp_c(Nodo, SS, CC), L),
@@ -84,10 +96,12 @@ melhor(Nodo, S, Custo) :-
 % Pesquisa: A Estrela 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % -- Algoritmo
-resolve_aestrela(Nodo,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
-	estima(Nodo, EstimaD, EstimaT),
+resolve_aestrela(Nodo,Veiculo,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
+%	estima(Nodo, EstimaD, EstimaT),
+	estimaD(Nodo,EstimaD),
+	estimaT(Nodo,Veiculo, EstimaT),
 	aestrela_distancia([[Nodo]/0/EstimaD], InvCaminho/CustoDist/_),
-	aestrela_tempo([[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo/_),
+	aestrela_tempo(Veiculo, [[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo/_),
 	inverso(InvCaminho, CaminhoDistancia),
 	inverso(InvCaminhoTempo, CaminhoTempo).
 
@@ -113,16 +127,16 @@ expande_aestrela_distancia(Caminho, ExpCaminhos) :-
 	findall(NovoCaminho, adjacente_distancia(Caminho,NovoCaminho), ExpCaminhos).
 
 % -- Tempo
-aestrela_tempo(Caminhos, Caminho) :-
+aestrela_tempo(_,Caminhos, Caminho) :-
 	obtem_melhor_tempo(Caminhos, Caminho),
 	Caminho = [Nodo|_]/_/_,
 	objetivo(Nodo).
-aestrela_tempo(Caminhos, SolucaoCaminho) :-
+aestrela_tempo(Veiculo,Caminhos, SolucaoCaminho) :-
 	obtem_melhor_tempo(Caminhos, MelhorCaminho),
 	seleciona(MelhorCaminho, Caminhos, OutrosCaminhos),
-	expande_aestrela_tempo(MelhorCaminho, ExpCaminhos),
+	expande_aestrela_tempo(Veiculo,MelhorCaminho, ExpCaminhos),
 	append(OutrosCaminhos, ExpCaminhos, NovoCaminhos),
-    aestrela_tempo(NovoCaminhos, SolucaoCaminho).
+    aestrela_tempo(Veiculo,NovoCaminhos, SolucaoCaminho).
 
 obtem_melhor_tempo([Caminho], Caminho) :- !.
 obtem_melhor_tempo([Caminho1/Custo1/Est1,_/Custo2/Est2|Caminhos], MelhorCaminho) :-
@@ -131,16 +145,17 @@ obtem_melhor_tempo([Caminho1/Custo1/Est1,_/Custo2/Est2|Caminhos], MelhorCaminho)
 obtem_melhor_tempo([_|Caminhos], MelhorCaminho) :-
 	obtem_melhor_tempo(Caminhos, MelhorCaminho).
 
-expande_aestrela_tempo(Caminho, ExpCaminhos) :-
-	findall(NovoCaminho, adjacente_tempo(Caminho,NovoCaminho), ExpCaminhos).
+expande_aestrela_tempo(Veiculo,Caminho, ExpCaminhos) :-
+	findall(NovoCaminho, adjacente_tempo(Veiculo,Caminho,NovoCaminho), ExpCaminhos).
 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Gulosa
 %---------------------------------------------------------------------------------------------------------------------------------------
-resolve_gulosa(Nodo,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
-	estima(Nodo, EstimaD, EstimaT),
+resolve_gulosa(Nodo,Veiculo,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
+	estimaD(Nodo,EstimaD),
+	estimaT(Nodo,Veiculo, EstimaT),
 	agulosa_distancia_g([[Nodo]/0/EstimaD], InvCaminho/CustoDist/_),
-	agulosa_tempo_g([[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo/_),
+	agulosa_tempo_g(Veiculo,[[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo/_),
 	inverso(InvCaminho, CaminhoDistancia),
 	inverso(InvCaminhoTempo, CaminhoTempo).
 
@@ -157,7 +172,7 @@ agulosa_distancia_g(Caminhos, SolucaoCaminho) :-
     agulosa_distancia_g(NovoCaminhos, SolucaoCaminho).
 
 obtem_melhor_distancia_g([Caminho], Caminho) :- !.
-obtem_melhor_distancia_g([Caminho1/Custo1/Est1,_/Custo2/Est2|Caminhos], MelhorCaminho) :-
+obtem_melhor_distancia_g([Caminho1/Custo1/Est1,_/_/Est2|Caminhos], MelhorCaminho) :-
 	Est1 =< Est2, !,
 	obtem_melhor_distancia_g([Caminho1/Custo1/Est1|Caminhos], MelhorCaminho).
 obtem_melhor_distancia_g([_|Caminhos], MelhorCaminho) :-
@@ -167,50 +182,51 @@ expande_agulosa_distancia_g(Caminho, ExpCaminhos) :-
 	findall(NovoCaminho, adjacente_distancia(Caminho,NovoCaminho), ExpCaminhos).
 	
 % -- Tempo
-agulosa_tempo_g(Caminhos, Caminho) :-
+agulosa_tempo_g(_,Caminhos, Caminho) :-
 	obtem_melhor_tempo_g(Caminhos, Caminho),
 	Caminho = [Nodo|_]/_/_,
 	objetivo(Nodo).
-agulosa_tempo_g(Caminhos, SolucaoCaminho) :-
+agulosa_tempo_g(Veiculo,Caminhos, SolucaoCaminho) :-
 	obtem_melhor_tempo_g(Caminhos, MelhorCaminho),
 	seleciona(MelhorCaminho, Caminhos, OutrosCaminhos),
-	expande_agulosa_tempo_g(MelhorCaminho, ExpCaminhos),
+	expande_agulosa_tempo_g(Veiculo, MelhorCaminho, ExpCaminhos),
 	append(OutrosCaminhos, ExpCaminhos, NovoCaminhos),
-    agulosa_tempo_g(NovoCaminhos, SolucaoCaminho).
+    agulosa_tempo_g(Veiculo, NovoCaminhos, SolucaoCaminho).
 
 obtem_melhor_tempo_g([Caminho], Caminho) :- !.
-obtem_melhor_tempo_g([Caminho1/Custo1/Est1,_/Custo2/Est2|Caminhos], MelhorCaminho) :-
+obtem_melhor_tempo_g([Caminho1/Custo1/Est1,_/_/Est2|Caminhos], MelhorCaminho) :-
 	Est1 =< Est2, !,
 	obtem_melhor_tempo_g([Caminho1/Custo1/Est1|Caminhos], MelhorCaminho).
 obtem_melhor_tempo_g([_|Caminhos], MelhorCaminho) :-
 	obtem_melhor_tempo_g(Caminhos, MelhorCaminho).
 
-expande_agulosa_tempo_g(Caminho, ExpCaminhos) :-
-	findall(NovoCaminho, adjacente_tempo(Caminho,NovoCaminho), ExpCaminhos).
+expande_agulosa_tempo_g(Veiculo, Caminho, ExpCaminhos) :-
+	findall(NovoCaminho, adjacente_tempo(Veiculo, Caminho,NovoCaminho), ExpCaminhos).
 
+% ------------------------------------------
 % -- Adjacente
 adjacente_distancia([Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/NovoCusto/EstDist) :-
-	aresta(Nodo, ProxNodo, PassoCustoDist, _),
+	aresta(Nodo, ProxNodo, PassoCustoDist),
 	\+ member(ProxNodo, Caminho),
 	NovoCusto is Custo + PassoCustoDist,
-	estima(ProxNodo, EstDist, _).
+	estimaD(ProxNodo, EstDist).
 
-adjacente_tempo([Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/NovoCusto/EstimaTempo) :-
-	aresta(Nodo, ProxNodo, _, PassoTempo),
+adjacente_tempo(Veiculo, [Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/NovoCusto/EstimaTempo) :-
+	custoT(Nodo, ProxNodo, Veiculo, PassoTempo),
 	\+ member(ProxNodo, Caminho),
 	NovoCusto is Custo + PassoTempo,
-	estima(ProxNodo, _ , EstimaTempo).
+	estimaT(ProxNodo, Veiculo, EstimaTempo).
 
 % ------------------------------------------
 % Predicados auxiliares
 
 % -- Mínimo
 minimo([(P,X)], (P,X)).
-minimo([(Px,X)|L], (Py,Y)):-
+minimo([(_,X)|L], (Py,Y)):-
     minimo(L, (Py,Y)),
     X > Y. 
 minimo([(Px,X)|L], (Px,X)):-
-    minimo(L, (Py,Y)),
+    minimo(L, (_,Y)),
     X =< Y.
 
 % -- Inverso
@@ -228,7 +244,7 @@ seleciona(E, [X|Xs], [X|Ys]) :-
 % -- Negação
 nao(Questao) :-
     Questao, !, fail.
-nao(Questao).
+nao(_).
 
 % -- Membro
 membro(X, [X|_]).
