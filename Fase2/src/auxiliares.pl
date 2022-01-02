@@ -10,35 +10,32 @@
 % Escolha do veículo a usar tendo em conta o peso da entrega
 % escolheVeiculo: Distancia, TempoMáximo, Peso, Velocidade média -> {V,F}
 escolheVeiculo(Distancia, TempoMaximo, Peso, VelocidadeMedia, Veiculo) :-
-	velocidadeBicicleta(Peso, VB),
-	velocidadeMoto(Peso, VM),
-	velocidadeCarro(Peso, VC),
+	velocidadeMedia(Peso, bicicleta, VB),
+	velocidadeMedia(Peso, moto, VM),
+	velocidadeMedia(Peso, carro, VC),
 	
 	(TempoMaximo > Distancia/VB, Peso =< 5 -> Veiculo is 1, VelocidadeMedia is VB, !;
 	TempoMaximo > Distancia/VM, Peso =< 20 -> Veiculo is 2, VelocidadeMedia is VM, !;
 	TempoMaximo > Distancia/VC, Peso =< 100 -> Veiculo is 3, VelocidadeMedia is VC, !).
 
-velocidadeBicicleta(Peso, V) :-
-	V is (10 - Peso*0.7).
-
-velocidadeMoto(Peso, V) :-
-	V is (35 - Peso*0.5).
-
-velocidadeCarro(Peso, V) :-
-	V is (25 - Peso*0.1).
-
+velocidadeMedia(Peso, Veiculo, V) :-
+	Veiculo == bicicleta -> V is (10 - Peso*0.7);
+	Veiculo == moto -> V is (35 - Peso*0.5);
+	Veiculo == carro -> V is (25 - Peso*0.1).
+	
+	
 % ------------------------------------------
 % Cálculo da estima do tempo (em minutos)
 % estimaT: estimaDistância, Velocidade média, EstimaTempo -> {V,F}
-estimaT(Localidade, Veiculo, EstimaT) :-
+estimaT(Peso, Localidade, Veiculo, EstimaT) :-
 	estimaD(Localidade, X),
-	transporte(Veiculo, _, V),
-	EstimaT is X/V.
+	velocidadeMedia(Peso, Veiculo, VP),
+	EstimaT is X/VP.
 
-custoT(Localidade, ProxLocadidade, Veiculo, CustoT) :-
+custoT(Peso, Localidade, ProxLocadidade, Veiculo, CustoT) :-
 	aresta(Localidade,ProxLocadidade,X),
-	transporte(Veiculo, _, V),
-	CustoT is X/V.
+	velocidadeMedia(Peso, Veiculo, VP),
+	CustoT is X/VP.
 
 
 %---------------------------------------------------------------------------------------------------------------------------------------
@@ -96,12 +93,12 @@ melhor(Nodo, S, Custo) :-
 % Pesquisa: A Estrela 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % -- Algoritmo
-resolve_aestrela(Nodo,Veiculo,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
+resolve_aestrela(Nodo,Veiculo,Peso,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
 %	estima(Nodo, EstimaD, EstimaT),
 	estimaD(Nodo,EstimaD),
-	estimaT(Nodo,Veiculo, EstimaT),
+	estimaT(Peso, Nodo, Veiculo, EstimaT),
 	aestrela_distancia([[Nodo]/0/EstimaD], InvCaminho/CustoDist/_),
-	aestrela_tempo(Veiculo, [[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo/_),
+	aestrela_tempo(Veiculo, Peso, [[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo/_),
 	inverso(InvCaminho, CaminhoDistancia),
 	inverso(InvCaminhoTempo, CaminhoTempo).
 
@@ -127,16 +124,16 @@ expande_aestrela_distancia(Caminho, ExpCaminhos) :-
 	findall(NovoCaminho, adjacente_distancia(Caminho,NovoCaminho), ExpCaminhos).
 
 % -- Tempo
-aestrela_tempo(_,Caminhos, Caminho) :-
+aestrela_tempo(_,_,Caminhos, Caminho) :-
 	obtem_melhor_tempo(Caminhos, Caminho),
 	Caminho = [Nodo|_]/_/_,
 	objetivo(Nodo).
-aestrela_tempo(Veiculo,Caminhos, SolucaoCaminho) :-
+aestrela_tempo(Veiculo,Peso,Caminhos, SolucaoCaminho) :-
 	obtem_melhor_tempo(Caminhos, MelhorCaminho),
 	seleciona(MelhorCaminho, Caminhos, OutrosCaminhos),
-	expande_aestrela_tempo(Veiculo,MelhorCaminho, ExpCaminhos),
+	expande_aestrela_tempo(Veiculo,Peso,MelhorCaminho, ExpCaminhos),
 	append(OutrosCaminhos, ExpCaminhos, NovoCaminhos),
-    aestrela_tempo(Veiculo,NovoCaminhos, SolucaoCaminho).
+    aestrela_tempo(Veiculo,Peso,NovoCaminhos, SolucaoCaminho).
 
 obtem_melhor_tempo([Caminho], Caminho) :- !.
 obtem_melhor_tempo([Caminho1/Custo1/Est1,_/Custo2/Est2|Caminhos], MelhorCaminho) :-
@@ -145,17 +142,17 @@ obtem_melhor_tempo([Caminho1/Custo1/Est1,_/Custo2/Est2|Caminhos], MelhorCaminho)
 obtem_melhor_tempo([_|Caminhos], MelhorCaminho) :-
 	obtem_melhor_tempo(Caminhos, MelhorCaminho).
 
-expande_aestrela_tempo(Veiculo,Caminho, ExpCaminhos) :-
-	findall(NovoCaminho, adjacente_tempo(Veiculo,Caminho,NovoCaminho), ExpCaminhos).
+expande_aestrela_tempo(Veiculo,Peso,Caminho, ExpCaminhos) :-
+	findall(NovoCaminho, adjacente_tempo(Veiculo,Peso,Caminho,NovoCaminho), ExpCaminhos).
 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Gulosa
 %---------------------------------------------------------------------------------------------------------------------------------------
-resolve_gulosa(Nodo,Veiculo,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
+resolve_gulosa(Nodo,Veiculo,Peso,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
 	estimaD(Nodo,EstimaD),
-	estimaT(Nodo,Veiculo, EstimaT),
+	estimaT(Peso, Nodo,Veiculo, EstimaT),
 	agulosa_distancia_g([[Nodo]/0/EstimaD], InvCaminho/CustoDist/_),
-	agulosa_tempo_g(Veiculo,[[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo/_),
+	agulosa_tempo_g(Veiculo, Peso, [[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo/_),
 	inverso(InvCaminho, CaminhoDistancia),
 	inverso(InvCaminhoTempo, CaminhoTempo).
 
@@ -182,16 +179,16 @@ expande_agulosa_distancia_g(Caminho, ExpCaminhos) :-
 	findall(NovoCaminho, adjacente_distancia(Caminho,NovoCaminho), ExpCaminhos).
 	
 % -- Tempo
-agulosa_tempo_g(_,Caminhos, Caminho) :-
+agulosa_tempo_g(_,_,Caminhos, Caminho) :-
 	obtem_melhor_tempo_g(Caminhos, Caminho),
 	Caminho = [Nodo|_]/_/_,
 	objetivo(Nodo).
-agulosa_tempo_g(Veiculo,Caminhos, SolucaoCaminho) :-
+agulosa_tempo_g(Veiculo, Peso, Caminhos, SolucaoCaminho) :-
 	obtem_melhor_tempo_g(Caminhos, MelhorCaminho),
 	seleciona(MelhorCaminho, Caminhos, OutrosCaminhos),
-	expande_agulosa_tempo_g(Veiculo, MelhorCaminho, ExpCaminhos),
+	expande_agulosa_tempo_g(Veiculo, Peso, MelhorCaminho, ExpCaminhos),
 	append(OutrosCaminhos, ExpCaminhos, NovoCaminhos),
-    agulosa_tempo_g(Veiculo, NovoCaminhos, SolucaoCaminho).
+    agulosa_tempo_g(Veiculo, Peso,NovoCaminhos, SolucaoCaminho).
 
 obtem_melhor_tempo_g([Caminho], Caminho) :- !.
 obtem_melhor_tempo_g([Caminho1/Custo1/Est1,_/_/Est2|Caminhos], MelhorCaminho) :-
@@ -200,8 +197,8 @@ obtem_melhor_tempo_g([Caminho1/Custo1/Est1,_/_/Est2|Caminhos], MelhorCaminho) :-
 obtem_melhor_tempo_g([_|Caminhos], MelhorCaminho) :-
 	obtem_melhor_tempo_g(Caminhos, MelhorCaminho).
 
-expande_agulosa_tempo_g(Veiculo, Caminho, ExpCaminhos) :-
-	findall(NovoCaminho, adjacente_tempo(Veiculo, Caminho,NovoCaminho), ExpCaminhos).
+expande_agulosa_tempo_g(Veiculo, Peso, Caminho, ExpCaminhos) :-
+	findall(NovoCaminho, adjacente_tempo(Veiculo, Peso,Caminho,NovoCaminho), ExpCaminhos).
 
 % ------------------------------------------
 % -- Adjacente
@@ -211,11 +208,11 @@ adjacente_distancia([Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/NovoCusto/Es
 	NovoCusto is Custo + PassoCustoDist,
 	estimaD(ProxNodo, EstDist).
 
-adjacente_tempo(Veiculo, [Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/NovoCusto/EstimaTempo) :-
-	custoT(Nodo, ProxNodo, Veiculo, PassoTempo),
+adjacente_tempo(Veiculo, Peso, [Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/NovoCusto/EstimaTempo) :-
+	custoT(Peso, Nodo, ProxNodo, Veiculo, PassoTempo),
 	\+ member(ProxNodo, Caminho),
 	NovoCusto is Custo + PassoTempo,
-	estimaT(ProxNodo, Veiculo, EstimaTempo).
+	estimaT(Peso, ProxNodo, Veiculo, EstimaTempo).
 
 % ------------------------------------------
 % Predicados auxiliares
