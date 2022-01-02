@@ -9,25 +9,23 @@
 :- consult('invariantes.pl').
 
 % ------------------------------------------
-% Gerar circuitos recebendo a encomenda (BFS, DFS, PPC)
-% 
-geraCircuitosNI(IDEncomenda, BFS, DFS) :-
+% Gerar circuitos recebendo a encomenda, utilizando algoritmos não informados (BFS, DFS, PPC)
+% geraCircuitosNI:
+geraCircuitosNI(IDEncomenda, BFS, DFS/Custo) :-
     encomenda(IDEncomenda, _, _, _, _, Freguesia, _, _, _, _ , _),
+    % -- BFS
     bfs(amares, Freguesia, BFS1),
     bfs(Freguesia, amares, BFS2),
     apagaPrimeiro(BFS2, BFS3), append(BFS1, BFS3, BFS),
-    dfs(amares, Freguesia, DFS1),
-    dfs(Freguesia, amares, DFS2),
-    apagaPrimeiro(DFS2, DFS3), append(DFS1, DFS3, DFS).
-    
-    %resolve_pp_c(Freguesia, PPC1, C1),
-    %reverse(PPC1, PPC2),
-    %apagaPrimeiro(PPC2, PPC3), append(PPC3, PPC1, PPC),
-    %C is C1 + C1.
+    % -- DFS
+    resolve_pp_d(amares, Freguesia, DFS1, Custo1),
+    resolve_pp_d(Freguesia, amares, DFS2, Custo2),
+    apagaPrimeiro(DFS2, DFS3), append(DFS1, DFS3, DFS),
+    Custo is Custo1 + Custo2.
 
 % ------------------------------------------
-% Gerar circuitos recebendo a encomenda (Gulosa, AEstrela)
-% 
+% Gerar circuitos recebendo a encomenda, utilizando algoritmos informados (Gulosa, Estrela)
+% geraCircuitosI: 
 geraCircuitosI(IDEncomenda, GulosaD/CGD, GulosaT/CGT ,AEstrelaD/CAD, AEstrelaT/CAT) :-
     encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _ , _),
     estimaD(Freguesia, Distancia),
@@ -48,7 +46,7 @@ geraCircuitosI(IDEncomenda, GulosaD/CGD, GulosaT/CGT ,AEstrelaD/CAD, AEstrelaT/C
 % 
 
 % ------------------------------------------
-% Comparar circuitos de entrega entdo em conta os indicadores de produtividade
+% Comparar circuitos de entrega tendo em conta os indicadores de produtividade
 % 
 
 % ------------------------------------------
