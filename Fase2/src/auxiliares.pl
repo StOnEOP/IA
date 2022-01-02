@@ -37,7 +37,7 @@ estimaT(Peso, Localidade, Veiculo, EstimaT) :-
 % Cálculo do custo do tempo com base na próxima localidade e veículo
 % custoT: Peso, Localidade, PróximaLocalidade, Veículo, CustoTempo -> {V,F}
 custoT(Peso, Localidade, ProxLocadidade, Veiculo, CustoT) :-
-	aresta(Localidade, ProxLocadidade, Distancia),
+	ligacaoC(Localidade, ProxLocadidade, Distancia),
 	velocidadeMedia(Peso, Veiculo, VM),
 	CustoT is Distancia/VM.
 
@@ -56,7 +56,7 @@ bfs2(EstadoF, [EstadosA|Outros], Solucao) :-
     bfs2(EstadoF, Todos, Solucao).
 
 %---------------------------------------------------------------------------------------------------------------------------------------
-% Pesquisa: Profundidade (DFS)
+% Pesquisa: Profundidade (DFS) (Talvez não seja necessário)
 %---------------------------------------------------------------------------------------------------------------------------------------
 dfs(EstadoI, EstadoF, Solucao) :-
 	dfs2(EstadoI, EstadoF, [EstadoI], Solucao).
@@ -69,28 +69,34 @@ dfs2(Act, EstadoF, EstadosA, Solucao) :-
 	dfs2(EstadoX, EstadoF, [EstadoX|EstadosA], Solucao).
 
 % ------------------------------------------------------------------------------------------------------------------------------
-% Pesquisa: Profundidade primeiro com custo
+% Pesquisa: Profundidade primeiro com custo e tempo
 % ------------------------------------------------------------------------------------------------------------------------------
-resolve_pp_c(Nodo, [Nodo|Caminho], C) :-
-	profundidadeprimeiro(Nodo, [Nodo], Caminho, C).
-
-profundidadeprimeiro(Nodo,_, [], 0) :-
-	objetivo(Nodo).
-profundidadeprimeiro(Nodo, Historico, [ProxNodo|Caminho], C) :-
-	adjacente(Nodo, ProxNodo, C1),
+resolve_pp_c(Nodo, NodoF, [Nodo|Caminho], C) :-
+	profundidadeprimeiro(Nodo, NodoF, [Nodo], Caminho, C).
+profundidadeprimeiro(Nodo, NodoF,_, [], 0) :-
+	Nodo == NodoF. 
+profundidadeprimeiro(Nodo, NodoF, Historico, [ProxNodo|Caminho], C) :-
+	ligacaoC(Nodo, ProxNodo, C1),
     nao(membro(ProxNodo, Historico)),
-    profundidadeprimeiro(ProxNodo, [ProxNodo|Historico], Caminho, C2), C is C1 + C2.
+    profundidadeprimeiro(ProxNodo, NodoF,[ProxNodo|Historico], Caminho, C2), C is C1 + C2.
 
-adjacente(Nodo, ProxNodo, C) :-
-	aresta(Nodo, ProxNodo, C).
-adjacente(Nodo, ProxNodo, C) :-
-	aresta(ProxNodo, Nodo, C).
+resolve_pp_t(Nodo, NodoF, Peso, Veiculo, [Nodo|Caminho], T) :-
+	profundidadeprimeiroT(Nodo, NodoF, Peso, Veiculo, [Nodo], Caminho, T).
+profundidadeprimeiroT(Nodo, NodoF, _, _, _, [], 0) :-
+	Nodo == NodoF.
+profundidadeprimeiroT(Nodo, NodoF, Peso, Veiculo, Historico, [ProxNodo|Caminho], T) :-
+	custoT(Peso, Nodo, ProxNodo, Veiculo, T1),
+    nao(membro(ProxNodo, Historico)),
+    profundidadeprimeiro(ProxNodo, NodoF, [ProxNodo|Historico], Caminho, T2), T is T1 + T2.
 
-melhor(Nodo, S, Custo) :-
+melhorD(Nodo, S, Custo) :-
     findall((SS, CC),
-    resolve_pp_c(Nodo, SS, CC), L),
+    resolve_pp_c(Nodo, _, SS, CC), L),
 	minimo(L, (S, Custo)).
-
+melhorT(Nodo, Peso, Veiculo, S, Tempo) :-
+    findall((SS, TT),
+    resolve_pp_t(Nodo,_,Peso, Veiculo, SS, TT), L),
+	minimo(L, (S, Tempo)).
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: A Estrela 
 %---------------------------------------------------------------------------------------------------------------------------------------
@@ -205,7 +211,7 @@ expande_agulosa_tempo_g(Veiculo, Peso, Caminho, ExpCaminhos) :-
 % ------------------------------------------
 % Adjacente
 adjacente_distancia([Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/NovoCusto/EstDist) :-
-	aresta(Nodo, ProxNodo, PassoCustoDist),
+	ligacaoC(Nodo, ProxNodo, PassoCustoDist),
 	\+ member(ProxNodo, Caminho),
 	NovoCusto is Custo + PassoCustoDist,
 	estimaD(ProxNodo, EstDist).
@@ -215,6 +221,87 @@ adjacente_tempo(Veiculo, Peso, [Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/N
 	\+ member(ProxNodo, Caminho),
 	NovoCusto is Custo + PassoTempo,
 	estimaT(Peso, ProxNodo, Veiculo, EstimaTempo).
+
+% ------------------------------------------
+% Auxiliares (FASE I)
+% Calcula o preço total da entrega: Peso, Volume, Transporte, Prazo, Preço -> {V, F}
+% Preço calculado da seguinte forma: 15% Peso + 15% Volume + 35% Transporte Utilizado + 35% Prazo de Entrega
+calculaPreco(Peso,Volume,Transporte,Prazo,Preco) :- multiplicacao(Peso,15,Peso1),
+                                                    multiplicacao(Volume,15,Volume1),
+                                                    multiplicacao(Transporte,35,Transporte1),
+                                                    calculaPrecoPrazo(Prazo,Prazo1), multiplicacao(Prazo1,35,Prazo2),
+                                                    adicao(Peso1,Volume1,Transporte1,Prazo2,Preco1),
+                                                    Preco is div(Preco1,100).
+
+% ----------------------------------------
+% Multiplicação de 2 números: X, Y, Resultado -> {V, F}
+multiplicacao(X,Y,R) :- R = X*Y.
+
+% ----------------------------------------
+% Adição de 4 números: X, Y, Z, W, Resultado -> {V, F}
+adicao(X,Y,Z,W,R) :- R = X+Y+Z+W.
+
+% ----------------------------------------
+% Calcula o preço apropriado para um determinado prazo de entrega: Prazo, Preco -> {V, F}
+% Imediato
+calculaPrecoPrazo(0, Preco) :- Preco = 15.
+% 1 Dia
+calculaPrecoPrazo(24,Preco) :- Preco = 5.
+% 2 Horas
+calculaPrecoPrazo(2,Preco) :- Preco = 10.
+% 3 Dias
+calculaPrecoPrazo(72,Preco) :- Preco = 3.
+% 6 Horas
+calculaPrecoPrazo(6,Preco) :- Preco = 7.
+% 7 Dias
+calculaPrecoPrazo(168,Preco) :- Preco = 1.
+
+% ----------------------------------------
+% Verifica se a lista só tem inteiros: Lista -> {V, F}
+validaListaInteger([]).
+validaListaInteger([H|T]) :- integer(H), validaListaInteger(T).
+
+% ----------------------------------------
+% Verifica se o transporte é válido: Transporte -> {V, F}
+validaTransporte(T) :- integer(T), T >= 1, T =< 3.
+
+% ----------------------------------------
+% Verifica se um prazo de entrega é válido: Prazo -> {V, F}
+validaPrazo(PE) :- integer(PE), (PE == 0; PE == 24; PE == 2; PE == 72; PE == 6; PE == 168).
+
+% ----------------------------------------
+% Verifica se uma classificação é válida: Classificação -> {V, F}
+validaClassificacao(C) :- integer(C), C >= 0, C =< 5.
+
+% ----------------------------------------
+% Verifica se uma data é válida: Data -> {V, F}
+validaData(Ano,Mes,Dia,Hora) :- integer(Ano), integer(Mes), integer(Dia), integer(Hora),
+                                membro(Mes, [1,3,5,7,8,10,12]),
+                                Dia >= 1, Dia =< 31,
+                                Hora >= 0, Hora =< 23.
+validaData(Ano,Mes,Dia,Hora) :- integer(Ano), integer(Mes), integer(Dia), integer(Hora),
+                                membro(Mes, [4,6,9,11]),
+                                Dia >= 1, Dia =< 30,
+                                Hora >= 0, Hora =< 23.
+validaData(Ano,2,Dia,Hora) :-   integer(Ano), integer(Dia), integer(Hora),
+                                Dia >= 1, Dia =< 29, Hora >= 0, Hora =< 23.
+
+% Compara datas: Data, Data -> {V, F}
+
+comparaData(validaData(Ano,Mes,Dia,Hora), validaData(Ano2,Mes2,Dia2,Hora2)) :- (Ano-Ano2 < 0;
+                                                                                Ano-Ano2 =:= 0, Mes-Mes2 < 0;
+                                                                                Ano-Ano2 =:= 0, Mes-Mes2 =:= 0, Dia-Dia2 < 0;
+                                                                                Ano-Ano2 =:= 0, Mes-Mes2 =:= 0, Dia-Dia2 =:= 0, Hora-Hora2 =< 0).
+                                                                                
+
+% ----------------------------------------
+% Verifica se a Encomenda foi entregue no prazo establecido : Data, Data, Prazo -> {V, F}
+encomendaEntregue(validaData(A1,M1,D1,H1), validaData(A2,M2,D2,H2), P) :- (P == 0 -> A1 == A2, M1 == M2, D1 == D2, H1 == H2);
+                                                                          (P == 2 -> A1 == A2, M1 == M2, D1 == D2, H2-H1 =< 2);
+                                                                          (P == 6 -> A1 == A2, M1 == M2, D1 == D2, H2-H1 =< 6);
+                                                                          (P == 1 -> A1 == A2, M1 == M2, D2-D1 =< 1);
+                                                                          (P == 3 -> A1 == A2, M1 == M2, D2-D1 =< 3);
+                                                                          (P == 7 -> A1 == A2, M1 == M2, D2-D1 =< 7).
 
 % ------------------------------------------
 % Predicados auxiliares
@@ -255,3 +342,6 @@ escrever([]).
 escrever([X|L]):-
     write(X), nl,
     escrever(L).
+
+% -- Apaga primeiro elemento
+apagaPrimeiro([_|T], T).

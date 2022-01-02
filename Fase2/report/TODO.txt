@@ -1,5 +1,7 @@
 1. Começar métodos necessários (funcionalidades)
 
+2. Talvez mudar o Prazo imediato para 15min
+
 Informações:
         -> Ordenado por importância (número menor = mais importante)
         -> Apagar alíneas acima sempre que completadas
