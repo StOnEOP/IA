@@ -8,35 +8,38 @@
 
 % ------------------------------------------
 % Escolha do veículo a usar tendo em conta o peso da entrega
-% escolheVeiculo: Distancia, TempoMáximo, Peso, Velocidade média -> {V,F}
+% escolheVeiculo: Distância, TempoMáximo, Peso, VelocidadeMédia, Veículo -> {V,F}
 escolheVeiculo(Distancia, TempoMaximo, Peso, VelocidadeMedia, Veiculo) :-
 	velocidadeMedia(Peso, bicicleta, VB),
 	velocidadeMedia(Peso, moto, VM),
 	velocidadeMedia(Peso, carro, VC),
-	
 	(TempoMaximo > Distancia/VB, Peso =< 5 -> Veiculo is 1, VelocidadeMedia is VB, !;
 	TempoMaximo > Distancia/VM, Peso =< 20 -> Veiculo is 2, VelocidadeMedia is VM, !;
 	TempoMaximo > Distancia/VC, Peso =< 100 -> Veiculo is 3, VelocidadeMedia is VC, !).
 
+% ------------------------------------------
+% Cálculo da velocidade média do veículo tendo em conta o peso
+% velocidadeMedia: Peso, Veículo, VelocidadeMédia -> {V,F}
 velocidadeMedia(Peso, Veiculo, V) :-
 	Veiculo == bicicleta -> V is (10 - Peso*0.7);
 	Veiculo == moto -> V is (35 - Peso*0.5);
 	Veiculo == carro -> V is (25 - Peso*0.1).
-	
-	
+
 % ------------------------------------------
-% Cálculo da estima do tempo (em minutos)
-% estimaT: estimaDistância, Velocidade média, EstimaTempo -> {V,F}
+% Cálculo da estima do tempo com base na localidade e veículo
+% estimaT: Peso, Localidade, Veículo, EstimaTempo -> {V,F}
 estimaT(Peso, Localidade, Veiculo, EstimaT) :-
-	estimaD(Localidade, X),
-	velocidadeMedia(Peso, Veiculo, VP),
-	EstimaT is X/VP.
+	estimaD(Localidade, Distancia),
+	velocidadeMedia(Peso, Veiculo, VM),
+	EstimaT is Distancia/VM.
 
+% ------------------------------------------
+% Cálculo do custo do tempo com base na próxima localidade e veículo
+% custoT: Peso, Localidade, PróximaLocalidade, Veículo, CustoTempo -> {V,F}
 custoT(Peso, Localidade, ProxLocadidade, Veiculo, CustoT) :-
-	aresta(Localidade,ProxLocadidade,X),
-	velocidadeMedia(Peso, Veiculo, VP),
-	CustoT is X/VP.
-
+	aresta(Localidade, ProxLocadidade, Distancia),
+	velocidadeMedia(Peso, Veiculo, VM),
+	CustoT is Distancia/VM.
 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Largura (BFS)
@@ -83,7 +86,6 @@ adjacente(Nodo, ProxNodo, C) :-
 adjacente(Nodo, ProxNodo, C) :-
 	aresta(ProxNodo, Nodo, C).
 
-% MAIN CALL
 melhor(Nodo, S, Custo) :-
     findall((SS, CC),
     resolve_pp_c(Nodo, SS, CC), L),
@@ -201,7 +203,7 @@ expande_agulosa_tempo_g(Veiculo, Peso, Caminho, ExpCaminhos) :-
 	findall(NovoCaminho, adjacente_tempo(Veiculo, Peso,Caminho,NovoCaminho), ExpCaminhos).
 
 % ------------------------------------------
-% -- Adjacente
+% Adjacente
 adjacente_distancia([Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/NovoCusto/EstDist) :-
 	aresta(Nodo, ProxNodo, PassoCustoDist),
 	\+ member(ProxNodo, Caminho),

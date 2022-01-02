@@ -3,53 +3,70 @@
 % ------------------------------
 
 % ------------------------------------------
-% Aresta: LocalidadeOrigem, LocalidadeDestino, CustoDistancia -> {V,F}
-aresta(saovictor, pinheirovelho, 4).  
-aresta(saovictor, gualtar, 3). 
-aresta(saovictor, saovicente, 4).
-aresta(pinheirovelho, regadas, 3).
-aresta(gualtar, regadas, 4).
-aresta(gualtar, pousada, 6).
-aresta(gualtar, navarra, 6).
-aresta(gualtar, adaufe, 4).
-aresta(saovicente, adaufe, 4).
-aresta(saovicente, palmeira, 5).
-aresta(saovicente, saopedromerelim, 5).
-aresta(regadas, pousada, 3).
+% aresta: LocalidadeOrigem, LocalidadeDestino, CustoDistancia
+aresta(amares, pousada, 6).
+aresta(amares, lago, 7).
+aresta(pousada, covelas, 5).
+aresta(pousada, saomamedeeste, 6).
 aresta(pousada, navarra, 5).
-aresta(pousada, amares, 6).
+aresta(pousada, gualtar, 6).
+aresta(covelas, saomamedeeste, 7).
+aresta(saomamedeeste, pinheirovelho, 2).
+aresta(navarra, gualtar, 6).
 aresta(navarra, adaufe, 4).
-aresta(palmeira, saopedromerelim, 5).
+aresta(gualtar, pinheirovelho, 2).
+aresta(gualtar, adaufe, 4).
+aresta(gualtar, saovictor, 3).
+aresta(pinheirovelho, espinho, 6).
+aresta(adaufe, palmeira, 7).
+aresta(adaufe, saovicente, 4).
+aresta(saovictor, saovicente, 4).
+aresta(saovictor, arcos, 5).
+aresta(saovictor, semelhe, 7).
+aresta(espinho, arcos, 11).
+aresta(palmeira, lago, 4).
 aresta(palmeira, vilaprado, 6).
-aresta(saopedromerelim, vilaprado, 3).
-aresta(vilaprado, lago, 7).
-aresta(lago, amares, 7).
+aresta(palmeira, saovicente, 5).
+aresta(palmeira, saopedromerelim, 5).
+aresta(saovicente, saopedromerelim, 5).
+aresta(arcos, ferreiros, 4).
+aresta(lago, vilaprado, 7).
+aresta(vilaprado, saopedromerelim, 3).
+aresta(saopedromerelim, semelhe, 4).
+aresta(ferreiros, semelhe, 4).
 
+% ------------------------------------------
+% ligacao: LocalidadeEsquerda, LocalidadeDireita
 ligacao(X,Y) :- aresta(X,Y,_).
 ligacao(X,Y) :- aresta(Y,X,_).
 
 % ------------------------------------------
-% estimaD: Localidade, estimaDistância -> {V,F}
-estimaD(saovictor, 10).
-estimaD(pinheirovelho, 7).
-estimaD(gualtar, 8).
-estimaD(saovicente, 9).
-estimaD(regadas, 5).
-estimaD(pousada, 4).
-estimaD(navarra, 4).
-estimaD(adaufe, 7).
-estimaD(palmeira, 8).
-estimaD(saopedromerelim, 11).
-estimaD(vilaprado, 10).
-estimaD(lago, 6).
+% estimaD: Localidade, EstimaDistância
 estimaD(amares, 0).
+estimaD(pousada, 4).
+estimaD(lago, 6).
+estimaD(covelas, 5).
+estimaD(saomamedeeste, 6).
+estimaD(navarra, 4).
+estimaD(gualtar, 8).
+estimaD(pinheirovelho, 7).
+estimaD(adaufe, 7).
+estimaD(saovictor, 10).
+estimaD(espinho, 10).
+estimaD(palmeira, 8).
+estimaD(saovicente, 9).
+estimaD(arcos, 14).
+estimaD(semelhe, 13).
+estimaD(vilaprado, 10).
+estimaD(saopedromerelim, 11).
+estimaD(ferreiros, 13).
 
 % ------------------------------------------
-% Objetivo: Localidade -> {V,F}
+% objetivo: Localidade
 objetivo(amares).
 
 % ------------------------------------------
-% Objetivo: Veículo, Peso, Velocidade Média -> {V,F}
+% transporte: Veículo, Peso, VelocidadeMédia
 transporte(bicicleta, 5, 10).
 transporte(moto, 20, 35).
 transporte(carro, 100, 25).
