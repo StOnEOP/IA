@@ -47,20 +47,20 @@ custoT(Peso, Localidade, ProxLocadidade, Veiculo, CustoT) :-
 % Variável 'IdentificadorCusto': 0 -> distância ; 1 -> tempo
 % obtemMelhor: Algoritmo, IdentificadorCusto, Nodo, Peso, Veiculo, Solução, Custo -> {V,F}
 % -- BFS com distância
-%obtemMelhor(0, 0, Nodo, _, _, S, D) :-
-%	findall((SS, DD), resolve_lp_d(Nodo, SS, DD), L),
-%	minimo(L, (S, D)).
+obtemMelhor(0, 0, Nodo, NodoF, _, _, S, D) :-
+	findall((SS, DD), resolve_lp_d(Nodo, NodoF, SS/DD), L),
+	minimo(L, (S, D)).
 % -- BFS com tempo
 %obtemMelhor(0, 1, Nodo, Peso, Veiculo, S, T) :-
 %	findall((SS, TT), resolve_lp_t(Nodo, _, Peso, Veiculo, SS, TT), L),
 %	minimo(L, (S, T)).
 % -- DFS com distância
-obtemMelhor(1, 0, Nodo, _, _, S, D) :-
-	findall((SS, DD), resolve_pp_d(Nodo, _, SS, DD), L),
+obtemMelhor(1, 0, Nodo, NodoF, _, _, S, D) :-
+	findall((SS, DD), resolve_pp_d(Nodo, NodoF, SS, DD), L),
 	minimo(L, (S, D)).
 % -- DFS com tempo
-obtemMelhor(1, 1, Nodo, Peso, Veiculo, S, T) :-
-    findall((SS, TT), resolve_pp_t(Nodo, _, Peso, Veiculo, SS, TT), L),
+obtemMelhor(1, 1, Nodo, NodoF, Peso, Veiculo, S, T) :-
+    findall((SS, TT), resolve_pp_t(Nodo, NodoF, Peso, Veiculo, SS, TT), L),
 	minimo(L, (S, T)).
 
 %---------------------------------------------------------------------------------------------------------------------------------------
