@@ -48,94 +48,60 @@ custoT(Peso, Localidade, ProxLocadidade, Veiculo, CustoT) :-
 % obtemMelhor: Algoritmo, IdentificadorCusto, Nodo, Peso, Veiculo, Solução, Custo -> {V,F}
 
 % -- BFS com distância
-obtemMelhor(0, 0, Nodo, NodoF, _, _, S, D) :-
-	findall((SS, DD), resolve_lp_d(Nodo, NodoF, SS/DD), L),
-	minimo(L, (S, D)).
+obtemMelhor(0, 0, Nodo, _, _, S,D) :-
+	findall((SS,DD), resolve_lp_d(amares, Nodo, SS/DD), L),
+	pairwise_min(L, (S,D)).
+
 % -- BFS com tempo
-obtemMelhor(0, 1, Nodo, NodoF, Peso, Veiculo, S, T) :-
-	findall((SS, TT), resolve_lp_t(Nodo, NodoF, Peso, Veiculo, SS/TT), L),
-	minimo(L, (S, T)).
+obtemMelhor(0, 1, Nodo, Peso, Veiculo, S, T) :-
+	findall((SS, TT), resolve_lp_t(amares, Nodo, Peso, Veiculo, SS/TT), L),
+	pairwise_min(L, (S, T)).
 % -- DFS com distância
-obtemMelhor(1, 0, Nodo, NodoF, _, _, S, D) :-
-	findall((SS, DD), resolve_pp_d(Nodo, NodoF, SS, DD), L),
-	minimo(L, (S, D)).
+obtemMelhor(1, 0, Nodo, _, _, S, D) :-
+	findall((SS, DD), resolve_pp_d(Nodo, SS, DD), L),
+	pairwise_min(L, (S, D)).
 % -- DFS com tempo
-obtemMelhor(1, 1, Nodo, NodoF, Peso, Veiculo, S, T) :-
-    findall((SS, TT), resolve_pp_t(Nodo, NodoF, Peso, Veiculo, SS, TT), L),
-	minimo(L, (S, T)).
-
-%---------------------------------------------------------------------------------------------------------------------------------------
-% Pesquisa: Largura (BFS)
-%---------------------------------------------------------------------------------------------------------------------------------------
-bfs(EstadoI, EstadoF, Solucao) :-
-    bfs2(EstadoF, [[EstadoI]], Solucao).
-
-bfs2(EstadoF, [[EstadoF|T]|_], Solucao) :-
-    reverse([EstadoF|T], Solucao).
-bfs2(EstadoF, [EstadosA|Outros], Solucao) :-
-    EstadosA=[Act|_],
-    findall([EstadoX|EstadosA],(EstadoF\==Act, ligacao(Act,EstadoX), \+member(EstadoX,EstadosA)),Novos),
-    append(Outros,Novos,Todos),
-    bfs2(EstadoF, Todos, Solucao).
-
-%---------------------------------------------------------------------------------------------------------------------------------------
-% Pesquisa: Profundidade (DFS) (Talvez não seja necessário)
-%---------------------------------------------------------------------------------------------------------------------------------------
-dfs(EstadoI, EstadoF, Solucao) :-
-	dfs2(EstadoI, EstadoF, [EstadoI], Solucao).
-
-dfs2(EstadoF,EstadoF,EstadosA,Solucao) :-
-	reverse(EstadosA, Solucao).
-dfs2(Act, EstadoF, EstadosA, Solucao) :-
-	ligacao(Act, EstadoX),
-	\+member(EstadoX, EstadosA),
-	dfs2(EstadoX, EstadoF, [EstadoX|EstadosA], Solucao).
+obtemMelhor(1, 1, Nodo,Peso, Veiculo, S, T) :-
+    findall((SS, TT), resolve_pp_t(Nodo, Peso, Veiculo, SS, TT), L),
+	pairwise_min(L, (S, T)).
 
 % ------------------------------------------------------------------------------------------------------------------------------
-% Pesquisa: Largura primeiro com custo
+% Pesquisa: Largura primeiro com distância e tempo
 % ------------------------------------------------------------------------------------------------------------------------------
-% -- Custo = Distância
-resolve_lp_d(EstadoI, EstadoF, Solucao) :-
-    larguraprimeiroD(EstadoF, [([EstadoI]/0)], Solucao).
-larguraprimeiroD(EstadoF, [[EstadoF|T]/D|_] , Solucao/D) :-
-    reverse([EstadoF|T], Solucao).
-larguraprimeiroD(EstadoF, [EstadosA/D1|Outros], Solucao) :-
+resolve_lp(EstadoI, EstadoF, Peso, Veiculo, Solucao/C/T) :-
+    larguraprimeiro(EstadoF, Peso, Veiculo, [([EstadoI]/0/0)], Solucao1/C1/T1),
+	reverse(Solucao1, Solucao2),
+	apagaPrimeiro(Solucao1, Solucao3),
+	append(Solucao2, Solucao3, Solucao),
+	C is C1 + C1, T is T1 + T1.
+
+larguraprimeiro(EstadoF, _, _, [[EstadoF|Tail]/D/T|_] , [EstadoF|Tail]/D/T).
+larguraprimeiro(EstadoF, Peso, Veiculo, [EstadosA/D1/T1|Outros], Solucao) :-
     EstadosA=[Act|_],
-    findall(([EstadoX|EstadosA]/D), (EstadoF\==Act, ligacaoC(Act,EstadoX,D2), D is D1 + D2, \+member(EstadoX,EstadosA)), Novos),
+    findall(([EstadoX|EstadosA]/D/T), 
+			(EstadoF\==Act, 
+			ligacaoC(Act,EstadoX,D2), D is D1 + D2, custoT(Peso,Act,EstadoX,Veiculo,T2), T is T1 + T2, \+member(EstadoX,EstadosA)), 
+			Novos),
     append(Outros, Novos, Todos),
-    larguraprimeiroD(EstadoF, Todos, Solucao).
-
-% -- Custo = Tempo
-resolve_lp_t(EstadoI, EstadoF, Peso, Veiculo, Solucao) :-
-	larguraprimeiroT(EstadoF, Peso, Veiculo, [([EstadoI]/0)], Solucao).
-larguraprimeiroT(EstadoF, _, _, [[EstadoF|Tail]/T|_], Solucao/T) :-
-	reverse([EstadoF|Tail], Solucao).
-larguraprimeiroT(EstadoF, Peso, Veiculo, [EstadosA/T1|Outros], Solucao) :-
-	EstadosA=[Act|_],
-	findall(([EstadoX|EstadosA]/T), (EstadoF\==Act, custoT(Peso,Act,EstadoX,Veiculo,T2), T is T1 + T2, \+member(EstadoX,EstadosA)), Novos),
-	append(Outros, Novos,Todos),
-	larguraprimeiroT(EstadoF, Peso, Veiculo, Todos, Solucao).
+    larguraprimeiro(EstadoF,Peso,Veiculo,Todos, Solucao).
 
 % ------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Profundidade primeiro com custo
 % ------------------------------------------------------------------------------------------------------------------------------
-% -- Custo = Distância
-resolve_pp_d(Nodo, NodoF, [Nodo|Caminho], D) :-
-	profundidadeprimeiroD(Nodo, NodoF, [Nodo], Caminho, D).
-profundidadeprimeiroD(NodoF, NodoF,_, [], 0).
-profundidadeprimeiroD(Nodo, NodoF, Historico, [ProxNodo|Caminho], D) :-
+resolve_pp(Nodo, Peso, Veiculo, Caminho/D/T) :-
+	profundidadeprimeiro(Nodo, Peso, Veiculo, [Nodo], Caminho1/D1/T1),
+	reverse(Caminho1, CaminhoI),
+	append(CaminhoI, [Nodo], CaminhoN),
+	append(CaminhoN, Caminho1, Caminho),
+	D is D1 + D1, T is T1 + T1.
+profundidadeprimeiro(Nodo,_, _,_,[]/0/0) :-
+	objetivo(Nodo).
+profundidadeprimeiro(Nodo, Peso, Veiculo, Historico, [ProxNodo|Caminho]/D/T) :-
 	ligacaoC(Nodo, ProxNodo, D1),
-    nao(membro(ProxNodo, Historico)),
-    profundidadeprimeiroD(ProxNodo, NodoF, [ProxNodo|Historico], Caminho, D2), D is D1 + D2.
-
-% -- Custo = Tempo
-resolve_pp_t(Nodo, NodoF, Peso, Veiculo, [Nodo|Caminho], T) :-
-	profundidadeprimeiroT(Nodo, NodoF, Peso, Veiculo, [Nodo], Caminho, T).
-profundidadeprimeiroT(NodoF, NodoF, _, _, _, [], 0).
-profundidadeprimeiroT(Nodo, NodoF, Peso, Veiculo, Historico, [ProxNodo|Caminho], T) :-
 	custoT(Peso, Nodo, ProxNodo, Veiculo, T1),
     nao(membro(ProxNodo, Historico)),
-    profundidadeprimeiroT(ProxNodo, NodoF, Peso, Veiculo, [ProxNodo|Historico], Caminho, T2), T is T1 + T2.
+    profundidadeprimeiro(ProxNodo, Peso, Veiculo, [ProxNodo|Historico], Caminho/D2/T2),
+	D is D1 + D2, T is T1 + T2.
 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: A Estrela 
@@ -145,10 +111,16 @@ resolve_aestrela(Nodo,Veiculo,Peso,CaminhoDistancia/CustoDist, CaminhoTempo/Cust
 %	estima(Nodo, EstimaD, EstimaT),
 	estimaD(Nodo,EstimaD),
 	estimaT(Peso, Nodo, Veiculo, EstimaT),
-	aestrela_distancia([[Nodo]/0/EstimaD], InvCaminho/CustoDist/_),
-	aestrela_tempo(Veiculo, Peso, [[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo/_),
-	inverso(InvCaminho, CaminhoDistancia),
-	inverso(InvCaminhoTempo, CaminhoTempo).
+	aestrela_distancia([[Nodo]/0/EstimaD], InvCaminho/CustoDist1/_),
+	aestrela_tempo(Veiculo, Peso, [[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo1/_),
+	inverso(InvCaminho, CaminhoDistancia1),
+	apagaPrimeiro(CaminhoDistancia1, CaminhoDistancia2),
+	append(InvCaminho, CaminhoDistancia2, CaminhoDistancia),
+	inverso(InvCaminhoTempo, CaminhoTempo1),
+	apagaPrimeiro(CaminhoTempo1, CaminhoTempo2),
+	append(InvCaminhoTempo, CaminhoTempo2, CaminhoTempo),
+	CustoDist is CustoDist1 + CustoDist1,
+	CustoTempo is CustoTempo1 + CustoTempo1.
 
 % -- Distância
 aestrela_distancia(Caminhos, Caminho) :-
@@ -199,10 +171,16 @@ expande_aestrela_tempo(Veiculo,Peso,Caminho, ExpCaminhos) :-
 resolve_gulosa(Nodo,Veiculo,Peso,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
 	estimaD(Nodo,EstimaD),
 	estimaT(Peso, Nodo,Veiculo, EstimaT),
-	agulosa_distancia_g([[Nodo]/0/EstimaD], InvCaminho/CustoDist/_),
-	agulosa_tempo_g(Veiculo, Peso, [[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo/_),
-	inverso(InvCaminho, CaminhoDistancia),
-	inverso(InvCaminhoTempo, CaminhoTempo).
+	agulosa_distancia_g([[Nodo]/0/EstimaD], InvCaminho/CustoDist1/_),
+	agulosa_tempo_g(Veiculo, Peso, [[Nodo]/0/EstimaT], InvCaminhoTempo/CustoTempo1/_),
+	inverso(InvCaminho, CaminhoDistancia1),
+	apagaPrimeiro(CaminhoDistancia1, CaminhoDistancia2),
+	append(InvCaminho, CaminhoDistancia2, CaminhoDistancia),
+	inverso(InvCaminhoTempo, CaminhoTempo1),
+	apagaPrimeiro(CaminhoTempo1, CaminhoTempo2),
+	append(InvCaminhoTempo, CaminhoTempo2, CaminhoTempo),
+	CustoDist is CustoDist1 + CustoDist1,
+	CustoTempo is CustoTempo1 + CustoTempo1.
 
 % -- Distância
 agulosa_distancia_g(Caminhos, Caminho) :-
@@ -346,13 +324,11 @@ encomendaEntregue(validaData(A1,M1,D1,H1), validaData(A2,M2,D2,H2), P) :- (P == 
 % ------------------------------------------
 % Predicados auxiliares
 % -- Mínimo
-minimo([(P,X)], (P,X)).
-minimo([(_,X)|L], (Py,Y)):-
-    minimo(L, (Py,Y)),
-    X > Y. 
-minimo([(Px,X)|L], (Px,X)):-
-    minimo(L, (_,Y)),
-    X =< Y.
+pairwise_min( [X], X ) :- !.
+pairwise_min( [(A,B)|T], (RA,RB) ) :-
+pairwise_min(T, (A1,B1)), !,
+(B1 > B -> (RA = A,  RB = B)
+		 ; (RA = A1, RB = B1)).
 
 % -- Inverso
 inverso(Xs, Ys):-

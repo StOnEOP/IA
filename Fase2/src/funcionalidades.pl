@@ -11,17 +11,32 @@
 % ------------------------------------------
 % Gerar circuitos recebendo a encomenda, utilizando algoritmos não informados (BFS, DFS, PPC)
 % geraCircuitosNI:
-geraCircuitosNI(IDEncomenda, BFS, DFS/Custo) :-
-    encomenda(IDEncomenda, _, _, _, _, Freguesia, _, _, _, _ , _),
-    % -- BFS
-    bfs(amares, Freguesia, BFS1),
-    bfs(Freguesia, amares, BFS2),
-    apagaPrimeiro(BFS2, BFS3), append(BFS1, BFS3, BFS),
-    % -- DFS
-    resolve_pp_d(amares, Freguesia, DFS1, Custo1),
-    resolve_pp_d(Freguesia, amares, DFS2, Custo2),
-    apagaPrimeiro(DFS2, DFS3), append(DFS1, DFS3, DFS),
-    Custo is Custo1 + Custo2.
+geraCircuitosNI(IDEncomenda, BFS/CustoB/TempoB, DFS/CustoD/TempoD) :-
+    encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _ , _),
+    estimaD(Freguesia, Distancia),
+    escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
+    (Veiculo == 1 ->
+        % -- BFS
+        resolve_lp_d(amares, Freguesia, BFS/CustoB),
+        resolve_lp_t(amares, Freguesia, Peso, bicicleta, _/TempoB),
+        % -- DFS
+        resolve_pp_d(Freguesia, DFS, CustoD),
+        resolve_pp_t(Freguesia, Peso,bicicleta, _, TempoD);
+    Veiculo == 2 ->    
+        % -- BFS
+        resolve_lp_d(amares, Freguesia, BFS/CustoB),
+        resolve_lp_t(amares, Freguesia, Peso, moto, _/TempoB),
+        % -- DFS
+        resolve_pp_d(Freguesia, DFS, CustoD),
+        resolve_pp_t(Freguesia, Peso, moto, _, TempoD);
+    Veiculo == 3 ->
+        % -- BFS
+        resolve_lp_d(amares, Freguesia, BFS/CustoB),
+        resolve_lp_t(amares, Freguesia, Peso, carro, _/TempoB),
+        % -- DFS
+        resolve_pp_d(Freguesia, DFS, CustoD),
+        resolve_pp_t(Freguesia, Peso, carro, _, TempoD)
+    ).
 
 % ------------------------------------------
 % Gerar circuitos recebendo a encomenda, utilizando algoritmos informados (Gulosa, Estrela)
@@ -40,6 +55,10 @@ geraCircuitosI(IDEncomenda, GulosaD/CGD, GulosaT/CGT ,AEstrelaD/CAD, AEstrelaT/C
         resolve_gulosa(Freguesia, carro, Peso, GulosaD/CGD, GulosaT/CGT),
         resolve_aestrela(Freguesia, carro, Peso, AEstrelaD/CAD, AEstrelaT/CAT)
     ).
+
+geraCircuitos(IDEncomenda, BFS, DFS, GulosaD, GulosaT, AEstrelaD, AEstrelaT) :-
+    geraCircuitosNI(IDEncomenda, BFS, DFS),
+    geraCircuitosI(IDEncomenda, GulosaD, GulosaT, AEstrelaD, AEstrelaT).
 
 % ------------------------------------------
 % Identificar quais os circuitos com maior número de entregas por volume e peso
