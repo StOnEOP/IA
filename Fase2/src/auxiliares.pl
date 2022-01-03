@@ -65,6 +65,17 @@ obtemMelhor(1, 1, Nodo,Peso, Veiculo, S, T) :-
     findall((SS, TT), resolve_pp_t(Nodo, Peso, Veiculo, SS, TT), L),
 	pairwise_min(L, (S, T)).
 
+% ------------------------------------------
+% Caminho de A para B
+caminho(A,B,P) :- caminho1(A, [B], P).
+
+caminho1(A,[A|P1], [A|P1]).
+caminho1(A,[Y|P1], P) :- 
+	ligacao(X,Y), 
+	nao(membro(X,[Y|P1])), 
+	caminho1(A,[X,Y|P1], P).
+
+
 % ------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Largura primeiro com distância e tempo
 % ------------------------------------------------------------------------------------------------------------------------------
@@ -102,6 +113,22 @@ profundidadeprimeiro(Nodo, Peso, Veiculo, Historico, [ProxNodo|Caminho]/D/T) :-
     nao(membro(ProxNodo, Historico)),
     profundidadeprimeiro(ProxNodo, Peso, Veiculo, [ProxNodo|Historico], Caminho/D2/T2),
 	D is D1 + D2, T is T1 + T2.
+
+% ------------------------------------------------------------------------------------------------------------------------------
+% Pesquisa: Iterativa Limitada em Profundidade (Mudar nome das funções)
+% ------------------------------------------------------------------------------------------------------------------------------
+depth_first_iterative_deepening(Node,Max,Solution) :-
+	path(Node,GoalNode,Max,Solution),
+	objetivo(GoalNode).
+
+path(Node,Node,Max,[Node]) :-
+	Max > 0. 
+path(FirstNode,LastNode,Max,[LastNode|Path]) :-
+	Max > 0,
+	Max1 is Max - 1,
+	path(FirstNode,OneButLast,Max1,Path),
+	ligacao(OneButLast,LastNode),
+	\+ member(LastNode,Path).
 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: A Estrela 
