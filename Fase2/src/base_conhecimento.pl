@@ -21,7 +21,6 @@ aresta(adaufe, palmeira, 7).
 aresta(adaufe, saovicente, 4).
 aresta(saovictor, saovicente, 4).
 aresta(saovictor, arcos, 5).
-aresta(saovictor, semelhe, 7).
 aresta(espinho, arcos, 11).
 aresta(palmeira, lago, 4).
 aresta(palmeira, saopedromerelim, 5).
