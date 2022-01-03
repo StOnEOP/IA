@@ -12,7 +12,6 @@ aresta(pousada, navarra, 5).
 aresta(pousada, gualtar, 6).
 aresta(covelas, saomamedeeste, 7).
 aresta(saomamedeeste, pinheirovelho, 2).
-aresta(navarra, gualtar, 6).
 aresta(navarra, adaufe, 4).
 aresta(gualtar, pinheirovelho, 2).
 aresta(gualtar, adaufe, 4).
@@ -25,8 +24,6 @@ aresta(saovictor, arcos, 5).
 aresta(saovictor, semelhe, 7).
 aresta(espinho, arcos, 11).
 aresta(palmeira, lago, 4).
-aresta(palmeira, vilaprado, 6).
-aresta(palmeira, saovicente, 5).
 aresta(palmeira, saopedromerelim, 5).
 aresta(saovicente, saopedromerelim, 5).
 aresta(arcos, ferreiros, 4).

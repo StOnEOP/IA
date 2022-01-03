@@ -46,14 +46,15 @@ custoT(Peso, Localidade, ProxLocadidade, Veiculo, CustoT) :-
 % Variável 'Algoritmo': 0 -> bfs ; 1 -> dfs
 % Variável 'IdentificadorCusto': 0 -> distância ; 1 -> tempo
 % obtemMelhor: Algoritmo, IdentificadorCusto, Nodo, Peso, Veiculo, Solução, Custo -> {V,F}
+
 % -- BFS com distância
 obtemMelhor(0, 0, Nodo, NodoF, _, _, S, D) :-
 	findall((SS, DD), resolve_lp_d(Nodo, NodoF, SS/DD), L),
 	minimo(L, (S, D)).
 % -- BFS com tempo
-%obtemMelhor(0, 1, Nodo, Peso, Veiculo, S, T) :-
-%	findall((SS, TT), resolve_lp_t(Nodo, _, Peso, Veiculo, SS, TT), L),
-%	minimo(L, (S, T)).
+obtemMelhor(0, 1, Nodo, NodoF, Peso, Veiculo, S, T) :-
+	findall((SS, TT), resolve_lp_t(Nodo, NodoF, Peso, Veiculo, SS/TT), L),
+	minimo(L, (S, T)).
 % -- DFS com distância
 obtemMelhor(1, 0, Nodo, NodoF, _, _, S, D) :-
 	findall((SS, DD), resolve_pp_d(Nodo, NodoF, SS, DD), L),
@@ -100,11 +101,20 @@ larguraprimeiroD(EstadoF, [[EstadoF|T]/D|_] , Solucao/D) :-
     reverse([EstadoF|T], Solucao).
 larguraprimeiroD(EstadoF, [EstadosA/D1|Outros], Solucao) :-
     EstadosA=[Act|_],
-    findall(([EstadoX|EstadosA]/D),(EstadoF\==Act, ligacaoC(Act,EstadoX, D2), D is D1 + D2, \+member(EstadoX,EstadosA)),Novos),
-    append(Outros,Novos,Todos),
+    findall(([EstadoX|EstadosA]/D), (EstadoF\==Act, ligacaoC(Act,EstadoX,D2), D is D1 + D2, \+member(EstadoX,EstadosA)), Novos),
+    append(Outros, Novos, Todos),
     larguraprimeiroD(EstadoF, Todos, Solucao).
 
 % -- Custo = Tempo
+resolve_lp_t(EstadoI, EstadoF, Peso, Veiculo, Solucao) :-
+	larguraprimeiroT(EstadoF, Peso, Veiculo, [([EstadoI]/0)], Solucao).
+larguraprimeiroT(EstadoF, _, _, [[EstadoF|Tail]/T|_], Solucao/T) :-
+	reverse([EstadoF|Tail], Solucao).
+larguraprimeiroT(EstadoF, Peso, Veiculo, [EstadosA/T1|Outros], Solucao) :-
+	EstadosA=[Act|_],
+	findall(([EstadoX|EstadosA]/T), (EstadoF\==Act, custoT(Peso,Act,EstadoX,Veiculo,T2), T is T1 + T2, \+member(EstadoX,EstadosA)), Novos),
+	append(Outros, Novos,Todos),
+	larguraprimeiroT(EstadoF, Peso, Veiculo, Todos, Solucao).
 
 % ------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Profundidade primeiro com custo
