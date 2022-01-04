@@ -7,6 +7,28 @@
 :- consult('base_conhecimento.pl').
 
 % ------------------------------------------
+% Obtém todos os caminhos que passam por uma certa freguesia
+% todosCaminhosTerritorio: Freguesia, CaminhosPossíveis, Solução -> {V,F}
+todosCaminhosTerritorio(_, [], []).
+todosCaminhosTerritorio(Freguesia, [Caminho|T], L) :-
+    (member(Freguesia, Caminho) -> todosCaminhosTerritorio(Freguesia, T, L1),
+                                   append([Caminho], L1, L);
+                                   todosCaminhosTerritorio(Freguesia, T, L)).
+
+% ------------------------------------------
+% Obtém todos os caminhos possíveis para todas as freguesias de todas as encomendas até chegar a Amares (freguesia do centro de distribuições)
+% todosCaminhos: Solução -> {V,F}
+todosCaminhos(L) :-
+    findall(Freguesia, encomenda(_, _, _, _, _, Freguesia, _, _, _, _), L1),
+    getAllCaminhos(L1, L).
+
+getAllCaminhos([], []).
+getAllCaminhos([C|T], L) :-
+    findall(Lista, trajeto(C, amares, Lista), L1),
+    getAllCaminhos(T, L2),
+    append(L1, L2, L).
+
+% ------------------------------------------
 % Escolha do veículo a usar tendo em conta o peso da entrega
 % escolheVeiculo: Distância, TempoMáximo, Peso, VelocidadeMédia, Veículo -> {V,F}
 escolheVeiculo(Distancia, TempoMaximo, Peso, VelocidadeMedia, Veiculo) :-
@@ -43,48 +65,42 @@ custoT(Peso, Localidade, ProxLocadidade, Veiculo, CustoT) :-
 
 % ------------------------------------------
 % Obtém o melhor caminho do algoritmo escolhido pelo custo escolhido (distância ou tempo)
-% Variável 'Algoritmo': 0 -> bfs ; 1 -> dfs
-% Variável 'IdentificadorCusto': 0 -> distância ; 1 -> tempo
+% Variável 'Algoritmo': 0 -> bfs ; 1 -> dfs ; 2 -> dls
 % obtemMelhor: Algoritmo, IdentificadorCusto, Nodo, Peso, Veiculo, Solução, Custo -> {V,F}
-
-% -- BFS com distância
-obtemMelhor(0, 0, Nodo, _, _, S,D) :-
-	findall((SS,DD), resolve_lp_d(amares, Nodo, SS/DD), L),
-	pairwise_min(L, (S,D)).
-
-% -- BFS com tempo
-obtemMelhor(0, 1, Nodo, Peso, Veiculo, S, T) :-
-	findall((SS, TT), resolve_lp_t(amares, Nodo, Peso, Veiculo, SS/TT), L),
-	pairwise_min(L, (S, T)).
-% -- DFS com distância
-obtemMelhor(1, 0, Nodo, _, _, S, D) :-
-	findall((SS, DD), resolve_pp_d(Nodo, SS, DD), L),
-	pairwise_min(L, (S, D)).
-% -- DFS com tempo
-obtemMelhor(1, 1, Nodo,Peso, Veiculo, S, T) :-
-    findall((SS, TT), resolve_pp_t(Nodo, Peso, Veiculo, SS, TT), L),
-	pairwise_min(L, (S, T)).
+% -- BFS com distância e tempo
+obtemMelhor(0, Nodo, Peso, Veiculo, _, S, D, T) :-
+	findall((SS,DD,TT), resolve_lp(amares, Nodo, Peso, Veiculo, SS/DD/TT), L),
+	minimo(L, (S,D,T)).
+% -- DFS com distância e tempo
+obtemMelhor(1, Nodo, Peso, Veiculo, _, S, D, T) :-
+	findall((SS,DD,TT), resolve_pp(Nodo, Peso, Veiculo, SS/DD/TT), L),
+	minimo(L, (S,D,T)).
+% -- DLS com distância e tempo
+obtemMelhor(2, Nodo, Peso, Veiculo, Limite, S, D, T) :-
+	findall((SS,DD,TT), resolve_pil(Nodo, Peso, Veiculo, Limite, SS/DD/TT), L),
+	minimo(L, (S,D,T)).
 
 % ------------------------------------------
-% Caminho de A para B
-caminho(A,B,P) :- caminho1(A, [B], P).
+% Obtém todos os trajetos possíveis de uma dada freguesia até ao centro de distribuições em Amares
+% trajeto: FreguesiaInicial, FreguesiaCentroDistribuições, TrajetosPossíveis -> {V,F}
+trajeto(Freguesia, Centro, Trajetos) :-
+	trajetoAUX(Freguesia, [Centro], Trajetos).
 
-caminho1(A,[A|P1], [A|P1]).
-caminho1(A,[Y|P1], P) :- 
-	ligacao(X,Y), 
-	nao(membro(X,[Y|P1])), 
-	caminho1(A,[X,Y|P1], P).
-
+trajetoAUX(FreguesiaA, [FreguesiaA|Trajetos1], [FreguesiaA|Trajetos1]).
+trajetoAUX(FreguesiaA, [FreguesiaY|Trajetos1], Trajetos) :-
+	ligacao(FreguesiaX, FreguesiaY),
+	nao(membro(FreguesiaX, [FreguesiaY|Trajetos1])),
+	trajetoAUX(FreguesiaA, [FreguesiaX,FreguesiaY|Trajetos1], Trajetos).
 
 % ------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Largura primeiro com distância e tempo
 % ------------------------------------------------------------------------------------------------------------------------------
-resolve_lp(EstadoI, EstadoF, Peso, Veiculo, Solucao/C/T) :-
-    larguraprimeiro(EstadoF, Peso, Veiculo, [([EstadoI]/0/0)], Solucao1/C1/T1),
+resolve_lp(EstadoI, EstadoF, Peso, Veiculo, Solucao/D/T) :-
+    larguraprimeiro(EstadoF, Peso, Veiculo, [([EstadoI]/0/0)], Solucao1/D1/T1),
 	reverse(Solucao1, Solucao2),
 	apagaPrimeiro(Solucao1, Solucao3),
 	append(Solucao2, Solucao3, Solucao),
-	C is C1 + C1, T is T1 + T1.
+	D is D1 + D1, T is T1 + T1.
 
 larguraprimeiro(EstadoF, _, _, [[EstadoF|Tail]/D/T|_] , [EstadoF|Tail]/D/T).
 larguraprimeiro(EstadoF, Peso, Veiculo, [EstadosA/D1/T1|Outros], Solucao) :-
@@ -105,6 +121,7 @@ resolve_pp(Nodo, Peso, Veiculo, Caminho/D/T) :-
 	append(CaminhoI, [Nodo], CaminhoN),
 	append(CaminhoN, Caminho1, Caminho),
 	D is D1 + D1, T is T1 + T1.
+
 profundidadeprimeiro(Nodo,_, _,_,[]/0/0) :-
 	objetivo(Nodo).
 profundidadeprimeiro(Nodo, Peso, Veiculo, Historico, [ProxNodo|Caminho]/D/T) :-
@@ -115,27 +132,34 @@ profundidadeprimeiro(Nodo, Peso, Veiculo, Historico, [ProxNodo|Caminho]/D/T) :-
 	D is D1 + D2, T is T1 + T2.
 
 % ------------------------------------------------------------------------------------------------------------------------------
-% Pesquisa: Iterativa Limitada em Profundidade (Mudar nome das funções)
+% Pesquisa: Iterativa Limitada em Profundidade
 % ------------------------------------------------------------------------------------------------------------------------------
-depth_first_iterative_deepening(Node,Max,Solution) :-
-	path(Node,GoalNode,Max,Solution),
-	objetivo(GoalNode).
+resolve_pil(Nodo, Peso, Veiculo, Limite, Caminho/D/T) :-
+	profundidadeIterativaLimitada(Nodo, Peso, Veiculo, Limite, Caminho1/D1/T1),
+	reverse(Caminho1, CaminhoI),
+	append(CaminhoI, [Nodo], CaminhoN),
+	append(CaminhoN, Caminho1, Caminho),
+	D is D1 + D1, T is T1 + T1.
 
-path(Node,Node,Max,[Node]) :-
-	Max > 0. 
-path(FirstNode,LastNode,Max,[LastNode|Path]) :-
-	Max > 0,
-	Max1 is Max - 1,
-	path(FirstNode,OneButLast,Max1,Path),
-	ligacao(OneButLast,LastNode),
-	\+ member(LastNode,Path).
+profundidadeIterativaLimitada(Nodo, Peso, Veiculo, Limite, Solucao/D/T) :-
+	caminhoPIL(Nodo, NodoF, Peso, Veiculo, Limite, Solucao/D/T),
+	objetivo(NodoF).
+
+caminhoPIL(Nodo, Nodo, _, _, Limite, [Nodo]/0/0) :-
+	Limite > 0.
+caminhoPIL(Nodo, NodoF, Peso, Veiculo, Limite, [NodoF|Caminho]/D/T) :-
+	Limite > 0,
+	LimiteAUX is Limite - 1,
+	caminhoPIL(Nodo, NodoX, Peso, Veiculo, LimiteAUX, Caminho/D2/T2),
+	ligacaoC(NodoX, NodoF, D1), D is D1 + D2,
+	custoT(Peso, NodoX, NodoF, Veiculo, T1), T is T1 + T2,
+	\+ member(NodoF, Caminho).
 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: A Estrela 
 %---------------------------------------------------------------------------------------------------------------------------------------
 % -- Algoritmo
 resolve_aestrela(Nodo,Veiculo,Peso,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
-%	estima(Nodo, EstimaD, EstimaT),
 	estimaD(Nodo,EstimaD),
 	estimaT(Peso, Nodo, Veiculo, EstimaT),
 	aestrela_distancia([[Nodo]/0/EstimaD], InvCaminho/CustoDist1/_),
@@ -195,6 +219,7 @@ expande_aestrela_tempo(Veiculo,Peso,Caminho, ExpCaminhos) :-
 %---------------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Gulosa
 %---------------------------------------------------------------------------------------------------------------------------------------
+% -- Algoritmo
 resolve_gulosa(Nodo,Veiculo,Peso,CaminhoDistancia/CustoDist, CaminhoTempo/CustoTempo) :-
 	estimaD(Nodo,EstimaD),
 	estimaT(Peso, Nodo,Veiculo, EstimaT),
@@ -269,6 +294,8 @@ adjacente_tempo(Veiculo, Peso, [Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/N
 
 % ------------------------------------------
 % Auxiliares (FASE I)
+
+% ------------------------------------------
 % Calcula o preço total da entrega: Peso, Volume, Transporte, Prazo, Preço -> {V, F}
 % Preço calculado da seguinte forma: 15% Peso + 15% Volume + 35% Transporte Utilizado + 35% Prazo de Entrega
 calculaPreco(Peso,Volume,Transporte,Prazo,Preco) :- multiplicacao(Peso,15,Peso1),
@@ -349,11 +376,12 @@ encomendaEntregue(validaData(A1,M1,D1,H1), validaData(A2,M2,D2,H2), P) :- (P == 
                                                                           (P == 7 -> A1 == A2, M1 == M2, D2-D1 =< 7).
 
 % ------------------------------------------
-% Predicados auxiliares
+% Auxiliares (FASE II)
+
 % -- Mínimo
-pairwise_min( [X], X ) :- !.
-pairwise_min( [(A,B)|T], (RA,RB) ) :-
-pairwise_min(T, (A1,B1)), !,
+minimo( [X], X ) :- !.
+minimo( [(A,B)|T], (RA,RB) ) :-
+minimo(T, (A1,B1)), !,
 (B1 > B -> (RA = A,  RB = B)
 		 ; (RA = A1, RB = B1)).
 
