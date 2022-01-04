@@ -10,52 +10,34 @@
 
 % ------------------------------------------
 % Gera circuitos recebendo a encomenda, utiliza algoritmos não informados (BFS, DFS, PPC)
-% geraCircuitosNI: IDEncomenda, SoluçãoBFS, SoluçãoDFS -> {V,F}
-geraCircuitosNI(IDEncomenda, BFS/CustoB/TempoB, DFS/CustoD/TempoD, DLS/CustoL/TempoL) :-
+% Variável 'Custo': 0 -> Distância ; 1 -> Custo
+% geraCircuitosNI: Custo, IDEncomenda, SoluçãoBFS, SoluçãoDFS, SoluçãoDLS -> {V,F}
+geraCircuitosNI(Custo, IDEncomenda, BFS/CustoB, DFS/CustoD, DLS/CustoL) :-
     encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
     estimaD(Freguesia, Distancia),
     escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
-    (Veiculo == 1 ->
-        % -- BFS, DFS e DLS com o uso da bicicleta
-        resolve_lp(amares, Freguesia, Peso, bicicleta, BFS/CustoB/TempoB),
-        resolve_pp(Freguesia, Peso, bicicleta, DFS/CustoD/TempoD),
-        resolve_pil(Freguesia, Peso, bicicleta, 10, DLS/CustoL/TempoL);
-    Veiculo == 2 ->    
-        % -- BFS, DFS e DLS com o uso da moto
-        resolve_lp(amares, Freguesia, Peso, moto, BFS/CustoB/TempoB),
-        resolve_pp(Freguesia, Peso, moto, DFS/CustoD/TempoD),
-        resolve_pil(Freguesia, Peso, moto, 10, DLS/CustoL/TempoL);
-    Veiculo == 3 ->
-        % -- BFS, DFS e DLS com o uso do carro
-        resolve_lp(amares, Freguesia, Peso, carro, BFS/CustoB/TempoB),
-        resolve_pp(Freguesia, Peso, carro, DFS/CustoD/TempoD),
-        resolve_pil(Freguesia, Peso, carro, 10, DLS/CustoL/TempoL)
-    ).
+    resolve_lp(Custo, Freguesia, amares, Peso, Veiculo, BFS/CustoB),
+    resolve_pp(Custo, Freguesia, Peso, Veiculo, DFS/CustoD),
+    resolve_pil(Custo, Freguesia, Peso, Veiculo, 10, DLS/CustoL).
 
 % ------------------------------------------
 % Gera circuitos recebendo a encomenda, utiliza algoritmos informados (Gulosa, Estrela)
-% geraCircuitosI: IDEncomenda, SoluçãoGulosaDistância, SoluçãoGulosaTEmpo, SoluçãoEstrelaDistância, SoluçãoEstrelaTempo -> {V,F}
-geraCircuitosI(IDEncomenda, GulosaD/CGD, GulosaT/CGT ,AEstrelaD/CAD, AEstrelaT/CAT) :-
+% Variável 'Custo': 0 -> Distância ; 1 -> Custo
+% geraCircuitosI: Custo, IDEncomenda, SoluçãoGulosa, SoluçãoEstrela -> {V,F}
+geraCircuitosI(Custo, IDEncomenda, Gulosa/CustoG, AEstrela/CustoE) :-
     encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
     estimaD(Freguesia, Distancia),
     escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
-    (Veiculo == 1 ->
-        resolve_gulosa(Freguesia, bicicleta, Peso, GulosaD/CGD, GulosaT/CGT),
-        resolve_aestrela(Freguesia, bicicleta, Peso, AEstrelaD/CAD, AEstrelaT/CAT);
-    Veiculo == 2 ->    
-        resolve_gulosa(Freguesia, moto, Peso, GulosaD/CGD, GulosaT/CGT),
-        resolve_aestrela(Freguesia, moto, Peso, AEstrelaD/CAD, AEstrelaT/CAT);
-    Veiculo == 3 ->
-        resolve_gulosa(Freguesia, carro, Peso, GulosaD/CGD, GulosaT/CGT),
-        resolve_aestrela(Freguesia, carro, Peso, AEstrelaD/CAD, AEstrelaT/CAT)
-    ).
+    resolve_gulosa(Custo, Freguesia, Veiculo, Peso, Gulosa/CustoG),
+    resolve_aestrela(Custo, Freguesia, Veiculo, Peso, AEstrela/CustoE).
 
 % ------------------------------------------
 % Gera as soluções com o uso de algoritmos informados e não informados
 % geraCircuitosAlgoritmos: IDEncomenda, SoluçãoBFS, SoluçãoDFS, SoluçãoDLS, SoluçãoGulosaDistância, SoluçãoGulosaTempo, SoluçãoEstrelaDistância, SoluçãoTempoEstrela -> {V,F}
-geraCircuitosAlgoritmos(IDEncomenda, BFS, DFS, DLS, GulosaD, GulosaT, AEstrelaD, AEstrelaT) :-
-    geraCircuitosNI(IDEncomenda, BFS, DFS, DLS),
-    geraCircuitosI(IDEncomenda, GulosaD, GulosaT, AEstrelaD, AEstrelaT).
+geraCircuitosAlgoritmos(Custo, IDEncomenda, BFS, DFS, DLS, Gulosa, AEstrela) :-
+    Custo >= 0, Custo =< 1,
+    geraCircuitosNI(Custo, IDEncomenda, BFS, DFS, DLS),
+    geraCircuitosI(Custo, IDEncomenda, Gulosa, AEstrela).
 
 % ------------------------------------------
 % Gera todos os trajetos possíveis que passam por uma dada freguesia
