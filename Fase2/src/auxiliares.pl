@@ -29,6 +29,16 @@ getAllCaminhos([C|T], L) :-
     append(L1, L2, L).
 
 % ------------------------------------------
+todosCaminhosSemVolta(L) :-
+    findall(Freguesia, encomenda(_, _, _, _, _, Freguesia, _, _, _, _), L1),
+    getAllCaminhosSemVolta(L1, L).
+
+getAllCaminhosSemVolta([], []).
+getAllCaminhosSemVolta([C|T], L) :-
+    findall(Lista, trajetoSemVolta(C, amares, Lista), L1),
+    getAllCaminhosSemVolta(T, L2),
+    append(L1, L2, L).
+% ------------------------------------------
 % Escolha do veículo a usar tendo em conta o peso da entrega
 % escolheVeiculo: Distância, TempoMáximo, Peso, VelocidadeMédia, Veículo -> {V,F}
 escolheVeiculo(Distancia, TempoMaximo, Peso, VelocidadeMedia, Veiculo) :-
@@ -84,7 +94,10 @@ obtemMelhor(2, Nodo, Peso, Veiculo, Limite, S, D, T) :-
 % Obtém todos os trajetos possíveis de uma dada freguesia até ao centro de distribuições em Amares
 % trajeto: FreguesiaInicial, FreguesiaCentroDistribuições, TrajetosPossíveis -> {V,F}
 trajeto(Freguesia, Centro, Trajetos) :-
-	trajetoAUX(Freguesia, [Centro], Trajetos).
+	trajetoAUX(Freguesia, [Centro], Trajetos1),
+	reverse(Trajetos1, Trajeto2),
+	apagaPrimeiro(Trajetos1, Trajeto3),
+	append(Trajeto2, Trajeto3, Trajetos).
 
 trajetoAUX(FreguesiaA, [FreguesiaA|Trajetos1], [FreguesiaA|Trajetos1]).
 trajetoAUX(FreguesiaA, [FreguesiaY|Trajetos1], Trajetos) :-
@@ -92,6 +105,10 @@ trajetoAUX(FreguesiaA, [FreguesiaY|Trajetos1], Trajetos) :-
 	nao(membro(FreguesiaX, [FreguesiaY|Trajetos1])),
 	trajetoAUX(FreguesiaA, [FreguesiaX,FreguesiaY|Trajetos1], Trajetos).
 
+% ------------------------------------------------------------------------------------------------------------------------------
+trajetoSemVolta(Freguesia, Centro, Trajetos) :-
+	trajetoAUX(Freguesia, [Centro], Trajetos).
+	
 % ------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Largura primeiro com distância e tempo
 % ------------------------------------------------------------------------------------------------------------------------------
