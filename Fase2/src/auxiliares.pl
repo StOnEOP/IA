@@ -11,9 +11,9 @@
 % todosCaminhosTerritorio: Freguesia, CaminhosPossíveis, Solução -> {V,F}
 todosCaminhosTerritorio(_, [], []).
 todosCaminhosTerritorio(Freguesia, [Caminho|T], L) :-
-    (member(Freguesia, Caminho) -> todosCaminhosTerritorio(Freguesia, T, L1),
-                                   append([Caminho], L1, L);
-                                   todosCaminhosTerritorio(Freguesia, T, L)).
+	(member(Freguesia, Caminho) -> todosCaminhosTerritorio(Freguesia, T, L1),
+							   	   append([Caminho], L1, L);
+							       todosCaminhosTerritorio(Freguesia, T, L)).								
 
 % ------------------------------------------
 % Obtém todos os caminhos possíveis para todas as freguesias de todas as encomendas até chegar a Amares (freguesia do centro de distribuições)
@@ -27,6 +27,34 @@ getAllCaminhos([C|T], L) :-
     findall(Lista, trajeto(C, amares, Lista), L1),
     getAllCaminhos(T, L2),
     append(L1, L2, L).
+
+% ------------------------------------------
+% Obtém todos os caminhos que passam por uma certa freguesia com a Distância ou Tempo
+% todosCaminhosTerritorio: Freguesia, CaminhosPossíveis, Solução -> {V,F}
+todosCaminhosTerritorioDT(_, [], []).
+todosCaminhosTerritorioDT(Freguesia, [(D,Caminho)|T], L) :-
+    (member(Freguesia, Caminho) -> todosCaminhosTerritorioDT(Freguesia, T, L1),
+                                   append([(D,Caminho)], L1, L);
+                                   todosCaminhosTerritorioDT(Freguesia, T, L)).
+
+% ------------------------------------------
+% Obtém todos os caminhos possíveis para todas as freguesias de todas as encomendas até chegar a Amares (freguesia do centro de distribuições)
+% Variável 'Custo': 0 -> Distância ; 1 -> Tempo
+% todosCaminhos: Solução -> {V,F}
+todosCaminhosDT(Custo, L) :-
+    findall(Freguesia, encomenda(_, _, _, _, _, Freguesia, _, _, _, _), L1),
+    getAllCaminhosDT(Custo, L1, L).
+
+getAllCaminhosDT(_, [], []).
+getAllCaminhosDT(Custo, [C|T], L) :-
+    (Custo == 0 ->
+		findall(Lista, trajetoD(C, amares, Lista), L1),
+    	getAllCaminhosDT(0, T, L2),
+    	append(L1, L2, L);
+	Custo == 1 ->
+		findall(Lista, trajetoT(C, amares, Lista), L1),
+		getAllCaminhosDT(1, T, L2),
+		append(L1, L2, L)).	
 
 % ------------------------------------------
 % Obtém todos os caminhos possíveis para todas as freguesias de todas as encomendas
@@ -108,7 +136,46 @@ trajetoAUX(FreguesiaA, [FreguesiaY|Trajetos1], Trajetos) :-
 	ligacao(FreguesiaX, FreguesiaY),
 	nao(membro(FreguesiaX, [FreguesiaY|Trajetos1])),
 	trajetoAUX(FreguesiaA, [FreguesiaX,FreguesiaY|Trajetos1], Trajetos).
-	
+
+% ------------------------------------------
+% Obtém todos os trajetos possíveis de uma dada freguesia com a distância
+% trajeto: FreguesiaInicial, FreguesiaCentroDistribuições, TrajetosPossíveis/Distância -> {V,F}
+% -- Trajeto até ao ponto da entrega e de volta ao centro de distribuições (amares)
+trajetoD(Freguesia, Centro, (C,Trajetos)) :-
+	trajetoAUXD(Freguesia, [Centro], (C1,Trajetos1)),
+	reverse(Trajetos1, Trajeto2),
+	apagaPrimeiro(Trajetos1, Trajeto3),
+	append(Trajeto2, Trajeto3, Trajetos),
+	C is C1 + C1.
+
+trajetoAUXD(FreguesiaA, [FreguesiaA|Trajetos1], (0,[FreguesiaA|Trajetos1])).
+trajetoAUXD(FreguesiaA, [FreguesiaY|Trajetos1], (C,Trajetos)) :-
+	ligacaoC(FreguesiaX, FreguesiaY, C1),
+	nao(membro(FreguesiaX, [FreguesiaY|Trajetos1])),
+	trajetoAUXD(FreguesiaA, [FreguesiaX,FreguesiaY|Trajetos1], (C2, Trajetos)),
+	C is C1 + C2.
+
+% ------------------------------------------
+% Obtém todos os trajetos possíveis de uma dada freguesia com o tempo
+% trajeto: FreguesiaInicial, FreguesiaCentroDistribuições, TrajetosPossíveis/Tempo -> {V,F}
+% -- Trajeto até ao ponto da entrega e de volta ao centro de distribuições (amares)
+trajetoT(Freguesia, Centro, (T,Trajetos)) :-
+	encomenda(_, _, _, Peso, _, Freguesia, _, _, Prazo, _),
+    estimaD(Freguesia, Distancia),
+    escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
+	trajetoAUXT(Freguesia, [Centro], Peso, Veiculo, (T1, Trajetos1)),
+	reverse(Trajetos1, Trajeto2),
+	apagaPrimeiro(Trajetos1, Trajeto3),
+	append(Trajeto2, Trajeto3, Trajetos),
+	T is T1 + T1.
+
+trajetoAUXT(FreguesiaA, [FreguesiaA|Trajetos1], _, _, (0,[FreguesiaA|Trajetos1])).
+trajetoAUXT(FreguesiaA, [FreguesiaY|Trajetos1], Peso, Veiculo, (T, Trajetos)) :-
+	custoT(Peso, FreguesiaX, FreguesiaY, Veiculo, T1),
+	nao(membro(FreguesiaX, [FreguesiaY|Trajetos1])),
+	trajetoAUXT(FreguesiaA, [FreguesiaX,FreguesiaY|Trajetos1], Peso, Veiculo, (T2, Trajetos)),
+	T is T1 + T2.
+
 % ------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Largura primeiro com custo
 % ------------------------------------------------------------------------------------------------------------------------------
@@ -344,48 +411,6 @@ adjacente_tempo(Veiculo, Peso, [Nodo|Caminho]/Custo/_, [ProxNodo,Nodo|Caminho]/N
 % ------------------------------------------
 % Auxiliares (FASE I)
 
-% ------------------------------------------
-% Calcula o preço total da entrega: Peso, Volume, Transporte, Prazo, Preço -> {V, F}
-% Preço calculado da seguinte forma: 15% Peso + 15% Volume + 35% Transporte Utilizado + 35% Prazo de Entrega
-calculaPreco(Peso,Volume,Transporte,Prazo,Preco) :- multiplicacao(Peso,15,Peso1),
-                                                    multiplicacao(Volume,15,Volume1),
-                                                    multiplicacao(Transporte,35,Transporte1),
-                                                    calculaPrecoPrazo(Prazo,Prazo1), multiplicacao(Prazo1,35,Prazo2),
-                                                    adicao(Peso1,Volume1,Transporte1,Prazo2,Preco1),
-                                                    Preco is div(Preco1,100).
-
-% ----------------------------------------
-% Multiplicação de 2 números: X, Y, Resultado -> {V, F}
-multiplicacao(X,Y,R) :- R = X*Y.
-
-% ----------------------------------------
-% Adição de 4 números: X, Y, Z, W, Resultado -> {V, F}
-adicao(X,Y,Z,W,R) :- R = X+Y+Z+W.
-
-% ----------------------------------------
-% Calcula o preço apropriado para um determinado prazo de entrega: Prazo, Preco -> {V, F}
-% Imediato
-calculaPrecoPrazo(0, Preco) :- Preco = 15.
-% 1 Dia
-calculaPrecoPrazo(24,Preco) :- Preco = 5.
-% 2 Horas
-calculaPrecoPrazo(2,Preco) :- Preco = 10.
-% 3 Dias
-calculaPrecoPrazo(72,Preco) :- Preco = 3.
-% 6 Horas
-calculaPrecoPrazo(6,Preco) :- Preco = 7.
-% 7 Dias
-calculaPrecoPrazo(168,Preco) :- Preco = 1.
-
-% ----------------------------------------
-% Verifica se a lista só tem inteiros: Lista -> {V, F}
-validaListaInteger([]).
-validaListaInteger([H|T]) :- integer(H), validaListaInteger(T).
-
-% ----------------------------------------
-% Verifica se o transporte é válido: Transporte -> {V, F}
-validaTransporte(T) :- integer(T), T >= 1, T =< 3.
-
 % ----------------------------------------
 % Verifica se um prazo de entrega é válido: Prazo -> {V, F}
 validaPrazo(PE) :- integer(PE), (PE == 0; PE == 24; PE == 2; PE == 72; PE == 6; PE == 168).
@@ -407,24 +432,7 @@ validaData(Ano,Mes,Dia,Hora) :- integer(Ano), integer(Mes), integer(Dia), intege
 validaData(Ano,2,Dia,Hora) :-   integer(Ano), integer(Dia), integer(Hora),
                                 Dia >= 1, Dia =< 29, Hora >= 0, Hora =< 23.
 
-% Compara datas: Data, Data -> {V, F}
-
-comparaData(validaData(Ano,Mes,Dia,Hora), validaData(Ano2,Mes2,Dia2,Hora2)) :- (Ano-Ano2 < 0;
-                                                                                Ano-Ano2 =:= 0, Mes-Mes2 < 0;
-                                                                                Ano-Ano2 =:= 0, Mes-Mes2 =:= 0, Dia-Dia2 < 0;
-                                                                                Ano-Ano2 =:= 0, Mes-Mes2 =:= 0, Dia-Dia2 =:= 0, Hora-Hora2 =< 0).
-                                                                                
-
 % ----------------------------------------
-% Verifica se a Encomenda foi entregue no prazo establecido : Data, Data, Prazo -> {V, F}
-encomendaEntregue(validaData(A1,M1,D1,H1), validaData(A2,M2,D2,H2), P) :- (P == 0 -> A1 == A2, M1 == M2, D1 == D2, H1 == H2);
-                                                                          (P == 2 -> A1 == A2, M1 == M2, D1 == D2, H2-H1 =< 2);
-                                                                          (P == 6 -> A1 == A2, M1 == M2, D1 == D2, H2-H1 =< 6);
-                                                                          (P == 1 -> A1 == A2, M1 == M2, D2-D1 =< 1);
-                                                                          (P == 3 -> A1 == A2, M1 == M2, D2-D1 =< 3);
-                                                                          (P == 7 -> A1 == A2, M1 == M2, D2-D1 =< 7).
-
-% ------------------------------------------
 % Auxiliares (FASE II)
 
 % -- Mínimo

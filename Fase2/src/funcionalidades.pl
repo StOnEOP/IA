@@ -45,29 +45,30 @@ geraCircuitosAlgoritmos(Custo, IDEncomenda, BFS, DFS, DLS, Gulosa, AEstrela) :-
 geraCircuitos(Freguesia, L) :-
     todosCaminhos(L1),
     todosCaminhosTerritorio(Freguesia, L1, L).
+    
 
 % ------------------------------------------
 % Identificar quais os circuitos com maior número de entregas por volume e peso
 % 
-circuitosComMaisEntrega(Freguesia, Max, C1, C2, C3, C4, C5) :-
+circuitosComMaisEntrega(Freguesia, C1, C2, C3) :-
     geraCircuitosSemVolta(Freguesia, L1),
-    circuitosComMaisEntregaAUX(Max, L1, [C1, C2, C3, C4, C5|_]).
+    circuitosComMaisEntregaAUX(L1, C),
+    sort(0, @>, C, [C1, C2, C3|_]).
 
-circuitosComMaisEntregaAUX(0, [], []).
-circuitosComMaisEntregaAUX(Max, [Caminho], [Caminho]) :- contaPesoVolumeCaminho(Caminho, Max).
-circuitosComMaisEntregaAUX(Max, [Caminho|T], L) :- contaPesoVolumeCaminho(Caminho, Count),
-                                                   circuitosComMaisEntregaAUX(CountMax, T, Ls),
-                                                   (Count > CountMax -> Max = Count,
-                                                    reverse(Caminho, Caminho1),
-                                                    apagaPrimeiro(Caminho, Caminho2),
-                                                    append(Caminho1, Caminho2, Caminho3), 
-                                                    L = [Caminho3];
-                                                    Count == CountMax -> Max = CountMax, 
-                                                    reverse(Caminho, Caminho1),
-                                                    apagaPrimeiro(Caminho, Caminho2),
-                                                    append(Caminho1, Caminho2, Caminho3),
-                                                    L = [Caminho3|Ls]; 
-                                                    Max = CountMax, L = Ls).
+circuitosComMaisEntregaAUX([], []).
+circuitosComMaisEntregaAUX([Caminho], [(Max,Caminho3)]) :- 
+    contaPesoVolumeCaminho(Caminho, Max),
+    reverse(Caminho, Caminho1),
+    apagaPrimeiro(Caminho, Caminho2),
+    append(Caminho1, Caminho2, Caminho3). 
+circuitosComMaisEntregaAUX([Caminho|T], L) :-
+        contaPesoVolumeCaminho(Caminho, Count),
+        circuitosComMaisEntregaAUX(T, Ls),
+        reverse(Caminho, Caminho1),
+        apagaPrimeiro(Caminho, Caminho2),
+        append(Caminho1, Caminho2, Caminho3), 
+        append([(Count, Caminho3)], Ls, L).
+
 
 contaPesoVolumeCaminho([], 0).
 contaPesoVolumeCaminho([Freguesia], Max) :- contaPesoVolume(Freguesia, Max).
@@ -86,66 +87,18 @@ geraCircuitosSemVolta(Freguesia, L) :-
     
 % ------------------------------------------
 % Comparar circuitos de entrega tendo em conta os indicadores de produtividade
+% Variável 'Custo': 0 -> Distância ; 1 -> Tempo
 % 
-getAllCaminhosDC(Freguesia, L) :- 
-    geraCircuitos(Freguesia, L1),
-    getDistanciaTempoCircuito(L1, L).
-
-
-getDistanciaTempoCircuito([], []/0/0).
-getDistanciaTempoCircuito([Caminho], [[amares|Caminho1]/C/T]) :- 
-    getDistanciaTempoCaminho(Caminho, Caminho1/C/T).
-getDistanciaTempoCircuito([Caminho|Tail], L) :-
-    getDistanciaTempoCaminho(Caminho, L1/C/T),
-    L2 = [amares|L1]/C/T,
-    getDistanciaTempoCircuito(Tail, Ls),
-    append([L2], Ls, L).
-
-getDistanciaTempoCaminho([Freguesia, ProxFreguesia], [ProxFreguesia]/C/T) :-
-    encomenda(_, _, _, Peso, _, Freguesia, _, _, Prazo, _),
-    estimaD(Freguesia, Distancia),
-    escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
-    (Veiculo == 1 ->
-        ligacaoC(Freguesia, ProxFreguesia, C),
-        custoT(Peso, Freguesia, ProxFreguesia, bicicleta, T),
-    Veiculo == 2 ->    
-        ligacaoC(Freguesia, ProxFreguesia, C),
-        custoT(Peso, Freguesia, ProxFreguesia, moto, T);
-    Veiculo == 3 ->
-        ligacaoC(Freguesia, ProxFreguesia, C),
-        custoT(Peso, Freguesia, ProxFreguesia, carro, T)
+comparaCircuitos(Custo, Freguesia, P1, P2, P3) :-
+    (Custo == 0 ->
+        todosCaminhosDT(0, L1),
+        todosCaminhosTerritorioDT(Freguesia, L1, L2),
+        sort(0, @<, L2, [P1, P2, P3|_]);
+    Custo == 1 ->
+        todosCaminhosDT(1, L1),
+        todosCaminhosTerritorioDT(Freguesia, L1, L2),
+        sort(0, @<, L2, [P1, P2, P3|_])
     ).
-getDistanciaTempoCaminho([Freguesia,ProxFreguesia|Tail], L/C/T) :-
-    encomenda(_, _, _, Peso, _, ProxFreguesia, _, _, Prazo, _),
-    estimaD(Freguesia, Distancia),
-    escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
-    (Veiculo == 1 ->
-        ligacaoC(Freguesia, ProxFreguesia, C1),
-        custoT(Peso, Freguesia, ProxFreguesia, bicicleta, T1),
-        getDistanciaTempoCaminho([ProxFreguesia|Tail], L1/C2/T2),
-        append([ProxFreguesia], L1, L),
-        C is C1 + C2, T is T1 + T2;
-    Veiculo == 2 ->    
-        ligacaoC(Freguesia, ProxFreguesia, C1),
-        custoT(Peso, Freguesia, ProxFreguesia, moto, T1),
-        getDistanciaTempoCaminho([ProxFreguesia|Tail], L1/C2/T2),
-        append([ProxFreguesia], L1, L),
-        C is C1 + C2, T is T1 + T2;
-    Veiculo == 3 ->
-        ligacaoC(Freguesia, ProxFreguesia, C1),
-        custoT(Peso, Freguesia, ProxFreguesia, carro, T1),
-        getDistanciaTempoCaminho([ProxFreguesia|Tail], L1/C2/T2),
-        append([ProxFreguesia], L1, L),
-        C is C1 + C2, T is T1 + T2
-    ).
-
-getDistancia([Freguesia,ProxFreguesia], [ProxFreguesia]/C) :- ligacaoC(Freguesia, ProxFreguesia, C).
-getDistancia([Freguesia,ProxFreguesia|T], L/C) :-
-        ligacaoC(Freguesia, ProxFreguesia, C1),
-        getDistancia([ProxFreguesia|T], L1/C2),
-        append([ProxFreguesia], L1, L),
-        C is C1 + C2.
-    
 
 % ------------------------------------------
 % Obter o circuito mais rápido usando o critério da distância
