@@ -113,7 +113,7 @@ trajetoAUX(FreguesiaA, [FreguesiaY|Trajetos1], Trajetos) :-
 % Pesquisa: Largura primeiro com custo
 % ------------------------------------------------------------------------------------------------------------------------------
 % -- Custo: 0-> Distânca ; 1 -> Tempo
-resolve_lp(Custo, EstadoI, EstadoF, Peso, Veiculo, Solucao/R) :-
+resolve_lp(Custo, EstadoF, EstadoI, Peso, Veiculo, Solucao/R) :-
 	(Custo == 0 ->
 		larguraprimeiroD(EstadoF, [([EstadoI]/0)], Solucao1/R1);
 	Custo == 1 ->
@@ -168,7 +168,7 @@ profundidadeprimeiroT(Nodo, _, _, _, []/0) :-
 profundidadeprimeiroT(Nodo, Peso, Veiculo, Historico, [ProxNodo|Caminho]/T) :-
 	custoT(Peso, Nodo, ProxNodo, Veiculo, T1),
 	nao(membro(ProxNodo, Historico)),
-	profundidadeprimeiroD(ProxNodo, [ProxNodo|Historico], Caminho/T2),
+	profundidadeprimeiroT(ProxNodo, Peso, Veiculo, [ProxNodo|Historico], Caminho/T2),
 	T is T1 + T2.
 
 % ------------------------------------------------------------------------------------------------------------------------------

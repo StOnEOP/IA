@@ -49,16 +49,24 @@ geraCircuitos(Freguesia, L) :-
 % ------------------------------------------
 % Identificar quais os circuitos com maior número de entregas por volume e peso
 % 
-circuitosComMaisEntrega(Freguesia, L, Max) :-
+circuitosComMaisEntrega(Freguesia, Max, C1, C2, C3, C4, C5) :-
     geraCircuitosSemVolta(Freguesia, L1),
-    circuitosComMaisEntregaAUX(Max, L1, L).
+    circuitosComMaisEntregaAUX(Max, L1, [C1, C2, C3, C4, C5|_]).
 
 circuitosComMaisEntregaAUX(0, [], []).
 circuitosComMaisEntregaAUX(Max, [Caminho], [Caminho]) :- contaPesoVolumeCaminho(Caminho, Max).
 circuitosComMaisEntregaAUX(Max, [Caminho|T], L) :- contaPesoVolumeCaminho(Caminho, Count),
                                                    circuitosComMaisEntregaAUX(CountMax, T, Ls),
-                                                   (Count > CountMax -> Max = Count, L = [Caminho];
-                                                    Count == CountMax -> Max = CountMax, L = [Caminho|Ls]; 
+                                                   (Count > CountMax -> Max = Count,
+                                                    reverse(Caminho, Caminho1),
+                                                    apagaPrimeiro(Caminho, Caminho2),
+                                                    append(Caminho1, Caminho2, Caminho3), 
+                                                    L = [Caminho3];
+                                                    Count == CountMax -> Max = CountMax, 
+                                                    reverse(Caminho, Caminho1),
+                                                    apagaPrimeiro(Caminho, Caminho2),
+                                                    append(Caminho1, Caminho2, Caminho3),
+                                                    L = [Caminho3|Ls]; 
                                                     Max = CountMax, L = Ls).
 
 contaPesoVolumeCaminho([], 0).
@@ -142,48 +150,17 @@ getDistancia([Freguesia,ProxFreguesia|T], L/C) :-
 % ------------------------------------------
 % Obter o circuito mais rápido usando o critério da distância
 % 
-% geraCircuitosAlgoritmos(IDEncomenda, BFS, DFS, DLS, GulosaD, GulosaT, AEstrelaD, AEstrelaT)
-
-%obtemMelhor(1, Nodo, Peso, Veiculo, _, S, D, T)
-
-circuitoMaisRapido(Freguesia, BFS, DFS, DLS, GulosaD, AEstrelaD, Best) :-
-    encomenda(IDEncomenda,_,_,_,_,Freguesia,_,_,_,_,_),
-    geraCircuitosAlgoritmos(IDEncomenda, BFS, DFS, DLS, GulosaD, _, AEstrelaD, _).
-
-
-
-% -- BFS com distância
-obtemMelhor(Nodo, NodoF,S/D) :-
-	findall((SS, DD), resolve_lp_d(Nodo, NodoF, SS/DD), L),
-	minimo(L, (S, D)).
-% -- BFS com tempo
-obtemMelhor(0, 1, Nodo, NodoF, Peso, Veiculo, S, T) :-
-	findall((SS, TT), resolve_lp_t(Nodo, NodoF, Peso, Veiculo, SS/TT), L),
-	minimo(L, (S, T)).
-
-% -- Custo = Distância
-resolve_lp_d(EstadoI, EstadoF, Solucao) :-
-    larguraprimeiroD(EstadoF, [([EstadoI]/0)], Solucao).
-larguraprimeiroD(EstadoF, [[EstadoF|T]/D|_] , Solucao/D) :-
-    reverse([EstadoF|T], Solucao).
-larguraprimeiroD(EstadoF, [EstadosA/D1|Outros], Solucao) :-
-    EstadosA=[Act|_],
-    findall(([EstadoX|EstadosA]/D), (EstadoF\==Act, ligacaoC(Act,EstadoX,D2), D is D1 + D2, \+member(EstadoX,EstadosA)), Novos),
-    append(Outros, Novos, Todos),
-    larguraprimeiroD(EstadoF, Todos, Solucao).
-
-% -- Custo = Tempo
-resolve_lp_t(EstadoI, EstadoF, Peso, Veiculo, Solucao) :-
-	larguraprimeiroT(EstadoF, Peso, Veiculo, [([EstadoI]/0)], Solucao).
-larguraprimeiroT(EstadoF, _, _, [[EstadoF|Tail]/T|_], Solucao/T) :-
-	reverse([EstadoF|Tail], Solucao).
-larguraprimeiroT(EstadoF, Peso, Veiculo, [EstadosA/T1|Outros], Solucao) :-
-	EstadosA=[Act|_],
-	findall(([EstadoX|EstadosA]/T), (EstadoF\==Act, custoT(Peso,Act,EstadoX,Veiculo,T2), T is T1 + T2, \+member(EstadoX,EstadosA)), Novos),
-	append(Outros, Novos,Todos),
-	larguraprimeiroT(EstadoF, Peso, Veiculo, Todos, Solucao).
-
+circuitoMaisRapido(Freguesia, BFS, DFS, DLS, Gulosa, AEstrela, Best) :-
+    encomenda(IDEncomenda,_,_,_,_,Freguesia,_,_,_,_),
+    geraCircuitosAlgoritmos(0, IDEncomenda, BFS, DFS, DLS, Gulosa, AEstrela),
+    obtemMelhor(0, Freguesia, _, _, Best).
 
 % ------------------------------------------
 % Obter o cirtuito mais ecológico usando o critério de tempo
 % 
+circuitoMaisEcologico(Freguesia, Veiculo, BFS, DFS, DLS, Gulosa, AEstrela, Best) :-
+    encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
+    estimaD(Freguesia, Distancia),
+    escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
+    geraCircuitosAlgoritmos(1, IDEncomenda, BFS, DFS, DLS, Gulosa, AEstrela),
+    obtemMelhor(1, Freguesia,Peso , Veiculo, Best).
