@@ -79,37 +79,9 @@ todosCaminhos(L) :-
 
 getAllCaminhos([], []).
 getAllCaminhos([C|T], L) :-
-    findall(Lista, trajeto(C, amares, Lista), L1),
+    findall(Lista, resolve_lp(0, C, amares, _, _, Lista/_), L1),
     getAllCaminhos(T, L2),
     append(L1, L2, L).
-
-% ------------------------------------------
-% Obtém todos os caminhos que passam por uma certa freguesia com a Distância ou Tempo
-% todosCaminhosTerritorio: Freguesia, CaminhosPossíveis, Solução -> {V,F}
-todosCaminhosTerritorioDT(_, [], []).
-todosCaminhosTerritorioDT(Freguesia, [(D,Caminho)|T], L) :-
-    (member(Freguesia, Caminho) -> todosCaminhosTerritorioDT(Freguesia, T, L1),
-                                   append([(D,Caminho)], L1, L);
-                                   todosCaminhosTerritorioDT(Freguesia, T, L)).
-
-% ------------------------------------------
-% Obtém todos os caminhos possíveis para todas as freguesias de todas as encomendas até chegar a Amares (freguesia do centro de distribuições)
-% Variável 'Custo': 0 -> Distância ; 1 -> Tempo
-% todosCaminhos: Solução -> {V,F}
-todosCaminhosDT(Custo, L) :-
-    findall(Freguesia, encomenda(_, _, _, _, _, Freguesia, _, _, _, _), L1),
-    getAllCaminhosDT(Custo, L1, L).
-
-getAllCaminhosDT(_, [], []).
-getAllCaminhosDT(Custo, [C|T], L) :-
-    (Custo == 0 ->
-		findall(Lista, trajetoD(C, amares, Lista), L1),
-    	getAllCaminhosDT(0, T, L2),
-    	append(L1, L2, L);
-	Custo == 1 ->
-		findall(Lista, trajetoT(C, amares, Lista), L1),
-		getAllCaminhosDT(1, T, L2),
-		append(L1, L2, L)).	
 
 % ------------------------------------------
 % Obtém todos os caminhos possíveis para todas as freguesias de todas as encomendas
@@ -120,7 +92,7 @@ todosCaminhosSemVolta(L) :-
 
 getAllCaminhosSemVolta([], []).
 getAllCaminhosSemVolta([C|T], L) :-
-    findall(Lista, trajetoSemVolta(C, amares, Lista), L1),
+    findall(Lista, larguraprimeiroD(C, [([amares]/0)], Lista/_), L1),
     getAllCaminhosSemVolta(T, L2),
     append(L1, L2, L).
 
@@ -164,72 +136,14 @@ custoT(Peso, Localidade, ProxLocadidade, Veiculo, CustoT) :-
 % Variável 'Custo': 0-> distância ; 1 -> tempo
 % obtemMelhor: Algoritmo, IdentificadorCusto, Nodo, Peso, Veiculo, Solução, Custo -> {V,F}
 % -- Custo = Distância
+%resolve_pp(Custo, Nodo, Peso, Veiculo, Caminho/R)
 obtemMelhor(0, Nodo, _, _, S/D) :-
-	findall((SS,DD), resolve_lp(0, Nodo, amares, _, _, SS/DD), L),
+	findall((SS,DD), resolve_pp(0, Nodo,_ ,_ ,SS/DD), L),
 	minimo(L, (S,D)).
 % -- Custo = Tempo
 obtemMelhor(1, Nodo, Peso, Veiculo, S/T) :-
-	findall((SS,TT), resolve_lp(1, Nodo, amares, Peso, Veiculo, SS/TT), L),
+	findall((SS,TT), resolve_pp(1, Nodo, Peso, Veiculo, SS/TT), L),
 	minimo(L, (S,T)).
-
-% ------------------------------------------
-% Obtém todos os trajetos possíveis de uma dada freguesia
-% trajeto: FreguesiaInicial, FreguesiaCentroDistribuições, TrajetosPossíveis -> {V,F}
-% -- Trajeto até ao ponto da entrega e de volta ao centro de distribuições (amares)
-trajeto(Freguesia, Centro, Trajetos) :-
-	trajetoAUX(Freguesia, [Centro], Trajetos1),
-	reverse(Trajetos1, Trajeto2),
-	apagaPrimeiro(Trajetos1, Trajeto3),
-	append(Trajeto2, Trajeto3, Trajetos).
-
-% -- Trajeto até ponto da entrega
-trajetoSemVolta(Freguesia, Centro, Trajetos) :-
-	trajetoAUX(Freguesia, [Centro], Trajetos).
-
-trajetoAUX(FreguesiaA, [FreguesiaA|Trajetos1], [FreguesiaA|Trajetos1]).
-trajetoAUX(FreguesiaA, [FreguesiaY|Trajetos1], Trajetos) :-
-	ligacao(FreguesiaX, FreguesiaY),
-	nao(membro(FreguesiaX, [FreguesiaY|Trajetos1])),
-	trajetoAUX(FreguesiaA, [FreguesiaX,FreguesiaY|Trajetos1], Trajetos).
-
-% ------------------------------------------
-% Obtém todos os trajetos possíveis de uma dada freguesia com a distância
-% trajeto: FreguesiaInicial, FreguesiaCentroDistribuições, TrajetosPossíveis/Distância -> {V,F}
-% -- Trajeto até ao ponto da entrega e de volta ao centro de distribuições (amares)
-trajetoD(Freguesia, Centro, (C,Trajetos)) :-
-	trajetoAUXD(Freguesia, [Centro], (C1,Trajetos1)),
-	reverse(Trajetos1, Trajeto2),
-	apagaPrimeiro(Trajetos1, Trajeto3),
-	append(Trajeto2, Trajeto3, Trajetos),
-	C is C1 + C1.
-
-trajetoAUXD(FreguesiaA, [FreguesiaA|Trajetos1], (0,[FreguesiaA|Trajetos1])).
-trajetoAUXD(FreguesiaA, [FreguesiaY|Trajetos1], (C,Trajetos)) :-
-	ligacaoC(FreguesiaX, FreguesiaY, C1),
-	nao(membro(FreguesiaX, [FreguesiaY|Trajetos1])),
-	trajetoAUXD(FreguesiaA, [FreguesiaX,FreguesiaY|Trajetos1], (C2, Trajetos)),
-	C is C1 + C2.
-
-% ------------------------------------------
-% Obtém todos os trajetos possíveis de uma dada freguesia com o tempo
-% trajeto: FreguesiaInicial, FreguesiaCentroDistribuições, TrajetosPossíveis/Tempo -> {V,F}
-% -- Trajeto até ao ponto da entrega e de volta ao centro de distribuições (amares)
-trajetoT(Freguesia, Centro, (T,Trajetos)) :-
-	encomenda(_, _, _, Peso, _, Freguesia, _, _, Prazo, _),
-    estimaD(Freguesia, Distancia),
-    escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
-	trajetoAUXT(Freguesia, [Centro], Peso, Veiculo, (T1, Trajetos1)),
-	reverse(Trajetos1, Trajeto2),
-	apagaPrimeiro(Trajetos1, Trajeto3),
-	append(Trajeto2, Trajeto3, Trajetos),
-	T is T1 + T1.
-
-trajetoAUXT(FreguesiaA, [FreguesiaA|Trajetos1], _, _, (0,[FreguesiaA|Trajetos1])).
-trajetoAUXT(FreguesiaA, [FreguesiaY|Trajetos1], Peso, Veiculo, (T, Trajetos)) :-
-	custoT(Peso, FreguesiaX, FreguesiaY, Veiculo, T1),
-	nao(membro(FreguesiaX, [FreguesiaY|Trajetos1])),
-	trajetoAUXT(FreguesiaA, [FreguesiaX,FreguesiaY|Trajetos1], Peso, Veiculo, (T2, Trajetos)),
-	T is T1 + T2.
 
 % ------------------------------------------------------------------------------------------------------------------------------
 % Pesquisa: Largura primeiro com custo

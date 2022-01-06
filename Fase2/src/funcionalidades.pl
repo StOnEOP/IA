@@ -48,10 +48,10 @@ geraCircuitosAlgoritmos(Algoritmo, Custo, IDEncomenda, Travessia) :-
 % ------------------------------------------
 % Gera todos os trajetos possíveis que passam por uma dada freguesia
 % geraCircuitos: Freguesia, Solução -> {V,F}
-geraCircuitos(Freguesia, L) :-
+geraCircuitos(Freguesia, L, Length) :-
     todosCaminhos(L1),
-    todosCaminhosTerritorio(Freguesia, L1, L).
-    
+    todosCaminhosTerritorio(Freguesia, L1, L),
+    length(L, Length).
 
 % ------------------------------------------
 % Identificar quais os circuitos com maior número de entregas por volume e peso
@@ -61,6 +61,7 @@ circuitosComMaisEntrega(Freguesia, C1, C2, C3) :-
     circuitosComMaisEntregaAUX(L1, C),
     sort(0, @>, C, [C1, C2, C3|_]).
 
+% retorna lista com caminhos [(Peso + Volume, Caminho)]
 circuitosComMaisEntregaAUX([], []).
 circuitosComMaisEntregaAUX([Caminho], [(Max,Caminho3)]) :- 
     contaPesoVolumeCaminho(Caminho, Max),
@@ -75,7 +76,7 @@ circuitosComMaisEntregaAUX([Caminho|T], L) :-
         append(Caminho1, Caminho2, Caminho3), 
         append([(Count, Caminho3)], Ls, L).
 
-
+% Conta o Volume + Peso de um Caminho
 contaPesoVolumeCaminho([], 0).
 contaPesoVolumeCaminho([Freguesia], Max) :- contaPesoVolume(Freguesia, Max).
 contaPesoVolumeCaminho([Freguesia|T], Max) :-
@@ -83,10 +84,12 @@ contaPesoVolumeCaminho([Freguesia|T], Max) :-
     contaPesoVolumeCaminho(T, Max2),
     Max is Max1 + Max2.
 
+% Soma o peso e volume de todas as encomendas de uma Freguesia
 contaPesoVolume(Freguesia, Sum) :-
     findall(Total, (encomenda(_,_,_, Peso, Volume, Freguesia, _,_,_,_), Total is Peso + Volume), L),
         sum_list(L, Sum).
 
+% Gera os circuitos sem volta, i.e, [Freguesia....amares] ou [amares... Freguesia]
 geraCircuitosSemVolta(Freguesia, L) :-
     todosCaminhosSemVolta(L1),
     todosCaminhosTerritorio(Freguesia, L1, L).
@@ -95,31 +98,34 @@ geraCircuitosSemVolta(Freguesia, L) :-
 % Comparar circuitos de entrega tendo em conta os indicadores de produtividade
 % Variável 'Custo': 0 -> Distância ; 1 -> Tempo
 % 
-comparaCircuitos(Custo, Freguesia, P1, P2, P3) :-
+comparaCircuitos(Custo, Freguesia, TravessiaDFS, TravessiaBFS, TravessiaIDS, TravessiaG, TravessiaAE) :-
+    encomenda(IDEncomenda,_,_,_,_,Freguesia,_,_,_,_),
     (Custo == 0 ->
-        todosCaminhosDT(0, L1),
-        todosCaminhosTerritorioDT(Freguesia, L1, L2),
-        sort(0, @<, L2, [P1, P2, P3|_]);
+        geraCircuitosAlgoritmos(dfs, 0, IDEncomenda, TravessiaDFS),
+        geraCircuitosAlgoritmos(bfs, 0, IDEncomenda, TravessiaBFS),
+        geraCircuitosAlgoritmos(ids, 0, IDEncomenda, TravessiaIDS),
+        geraCircuitosAlgoritmos(gulosa, 0, IDEncomenda, TravessiaG),
+        geraCircuitosAlgoritmos(aestrela, 0, IDEncomenda, TravessiaAE);
     Custo == 1 ->
-        todosCaminhosDT(1, L1),
-        todosCaminhosTerritorioDT(Freguesia, L1, L2),
-        sort(0, @<, L2, [P1, P2, P3|_])
+        geraCircuitosAlgoritmos(dfs, 1, IDEncomenda, TravessiaDFS),
+        geraCircuitosAlgoritmos(bfs, 1, IDEncomenda, TravessiaBFS),
+        geraCircuitosAlgoritmos(ids, 1, IDEncomenda, TravessiaIDS),
+        geraCircuitosAlgoritmos(gulosa, 1, IDEncomenda, TravessiaG),
+        geraCircuitosAlgoritmos(aestrela, 1, IDEncomenda, TravessiaAE)
     ).
 
 % ------------------------------------------
 % Obter o circuito mais rápido usando o critério da distância
 % 
-circuitoMaisRapido(Algoritmo, Freguesia, Travessia, Best) :-
-    encomenda(IDEncomenda,_,_,_,_,Freguesia,_,_,_,_),
-    geraCircuitosAlgoritmos(Algoritmo, 0, IDEncomenda, Travessia),
-    obtemMelhor(0, Freguesia, _, _, Best).
+circuitoMaisRapido(IDEncomenda, Freguesia, Travessia) :-
+    encomenda(IDEncomenda, _, _, _, _, Freguesia, _, _, _, _),
+    obtemMelhor(0, Freguesia, _, _, Travessia).
 
 % ------------------------------------------
 % Obter o cirtuito mais ecológico usando o critério de tempo
 % 
-circuitoMaisEcologico(Algoritmo, Freguesia, Veiculo, Travessia, Best) :-
+circuitoMaisEcologico(IDEncomenda, Freguesia, Veiculo, Peso, Travessia) :-
     encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
     estimaD(Freguesia, Distancia),
     escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
-    geraCircuitosAlgoritmos(Algoritmo, 1, IDEncomenda, Travessia),
-    obtemMelhor(1, Freguesia,Peso , Veiculo, Best).
+    obtemMelhor(1, Freguesia,Peso , Veiculo, Travessia).
