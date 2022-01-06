@@ -7,8 +7,8 @@
 aresta(amares, pousada, 6).
 aresta(amares, lago, 7).
 %aresta(pousada, covelas, 5).
-%aresta(pousada, saomamedeeste, 6).
-%aresta(pousada, navarra, 5).
+aresta(pousada, saomamedeeste, 6).
+aresta(pousada, navarra, 5).
 aresta(pousada, gualtar, 6).
 aresta(covelas, saomamedeeste, 7).
 aresta(saomamedeeste, pinheirovelho, 2).
@@ -16,7 +16,7 @@ aresta(navarra, adaufe, 4).
 aresta(gualtar, pinheirovelho, 2).
 aresta(gualtar, saovictor, 3).
 aresta(pinheirovelho, espinho, 6).
-%aresta(adaufe, palmeira, 7).
+aresta(adaufe, palmeira, 7).
 aresta(adaufe, saovicente, 4).
 aresta(saovictor, saovicente, 4).
 aresta(saovictor, arcos, 5).

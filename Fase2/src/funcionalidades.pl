@@ -12,32 +12,38 @@
 % Gera circuitos recebendo a encomenda, utiliza algoritmos não informados (BFS, DFS, PPC)
 % Variável 'Custo': 0 -> Distância ; 1 -> Custo
 % geraCircuitosNI: Custo, IDEncomenda, SoluçãoBFS, SoluçãoDFS, SoluçãoDLS -> {V,F}
-geraCircuitosNI(Custo, IDEncomenda, BFS/CustoB, DFS/CustoD, DLS/CustoL) :-
+geraCircuitosNI(Algoritmo, Custo, IDEncomenda, Travessia/CustoT) :-
     encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
     estimaD(Freguesia, Distancia),
     escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
-    resolve_lp(Custo, Freguesia, amares, Peso, Veiculo, BFS/CustoB),
-    resolve_pp(Custo, Freguesia, Peso, Veiculo, DFS/CustoD),
-    resolve_pil(Custo, Freguesia, Peso, Veiculo, 10, DLS/CustoL).
+    (Algoritmo == 'bfs' ->
+        resolve_lp(Custo, Freguesia, amares, Peso, Veiculo, Travessia/CustoT);
+    Algoritmo == 'dfs' ->    
+        resolve_pp(Custo, Freguesia, Peso, Veiculo, Travessia/CustoT);
+    Algoritmo == 'ids' ->   
+        resolve_pil(Custo, Freguesia, Peso, Veiculo, 10, Travessia/CustoT)).    
 
 % ------------------------------------------
 % Gera circuitos recebendo a encomenda, utiliza algoritmos informados (Gulosa, Estrela)
 % Variável 'Custo': 0 -> Distância ; 1 -> Custo
 % geraCircuitosI: Custo, IDEncomenda, SoluçãoGulosa, SoluçãoEstrela -> {V,F}
-geraCircuitosI(Custo, IDEncomenda, Gulosa/CustoG, AEstrela/CustoE) :-
+geraCircuitosI(Algoritmo, Custo, IDEncomenda, Travessia/CustoT) :-
     encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
     estimaD(Freguesia, Distancia),
     escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
-    resolve_gulosa(Custo, Freguesia, Veiculo, Peso, Gulosa/CustoG),
-    resolve_aestrela(Custo, Freguesia, Veiculo, Peso, AEstrela/CustoE).
+    (Algoritmo == 'gulosa' ->
+        resolve_gulosa(Custo, Freguesia, Veiculo, Peso, Travessia/CustoT);
+    Algoritmo == 'aestrela' ->   
+        resolve_aestrela(Custo, Freguesia, Veiculo, Peso, Travessia/CustoT)).
 
 % ------------------------------------------
 % Gera as soluções com o uso de algoritmos informados e não informados
 % geraCircuitosAlgoritmos: IDEncomenda, SoluçãoBFS, SoluçãoDFS, SoluçãoDLS, SoluçãoGulosaDistância, SoluçãoGulosaTempo, SoluçãoEstrelaDistância, SoluçãoTempoEstrela -> {V,F}
-geraCircuitosAlgoritmos(Custo, IDEncomenda, BFS, DFS, DLS, Gulosa, AEstrela) :-
+geraCircuitosAlgoritmos(Algoritmo, Custo, IDEncomenda, Travessia) :-
     Custo >= 0, Custo =< 1,
-    geraCircuitosNI(Custo, IDEncomenda, BFS, DFS, DLS),
-    geraCircuitosI(Custo, IDEncomenda, Gulosa, AEstrela).
+    (Algoritmo \== 'gulosa', Algoritmo \== 'aestrela' ->
+        geraCircuitosNI(Algoritmo, Custo, IDEncomenda, Travessia);
+    geraCircuitosI(Algoritmo, Custo, IDEncomenda, Travessia)).
 
 % ------------------------------------------
 % Gera todos os trajetos possíveis que passam por uma dada freguesia
@@ -103,17 +109,17 @@ comparaCircuitos(Custo, Freguesia, P1, P2, P3) :-
 % ------------------------------------------
 % Obter o circuito mais rápido usando o critério da distância
 % 
-circuitoMaisRapido(Freguesia, BFS, DFS, DLS, Gulosa, AEstrela, Best) :-
+circuitoMaisRapido(Algoritmo, Freguesia, Travessia, Best) :-
     encomenda(IDEncomenda,_,_,_,_,Freguesia,_,_,_,_),
-    geraCircuitosAlgoritmos(0, IDEncomenda, BFS, DFS, DLS, Gulosa, AEstrela),
+    geraCircuitosAlgoritmos(Algoritmo, 0, IDEncomenda, Travessia),
     obtemMelhor(0, Freguesia, _, _, Best).
 
 % ------------------------------------------
 % Obter o cirtuito mais ecológico usando o critério de tempo
 % 
-circuitoMaisEcologico(Freguesia, Veiculo, BFS, DFS, DLS, Gulosa, AEstrela, Best) :-
+circuitoMaisEcologico(Algoritmo, Freguesia, Veiculo, Travessia, Best) :-
     encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
     estimaD(Freguesia, Distancia),
     escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
-    geraCircuitosAlgoritmos(1, IDEncomenda, BFS, DFS, DLS, Gulosa, AEstrela),
+    geraCircuitosAlgoritmos(Algoritmo, 1, IDEncomenda, Travessia),
     obtemMelhor(1, Freguesia,Peso , Veiculo, Best).

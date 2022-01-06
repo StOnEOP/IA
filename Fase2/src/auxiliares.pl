@@ -7,6 +7,61 @@
 :- consult('base_conhecimento.pl').
 
 % ------------------------------------------
+% Estatísticas do Algoritmo Breath First - Memória e tempo de execução
+statisticsBFS(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
+	encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
+	estimaD(Freguesia, Distancia),
+	escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
+	statistics(global_stack, [Used1, _]),
+	time(resolve_lp(Custo, Freguesia, amares, Peso, Veiculo, Travessia/CustoT)),
+	statistics(global_stack, [Used2, _]),
+	Mem is Used2 - Used1.
+
+% ------------------------------------------
+% Estatísticas do Algoritmo Depth First - Memória e tempo de execução
+statisticsDFS(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
+	encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
+	estimaD(Freguesia, Distancia),
+	escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
+	statistics(global_stack, [Used1, _]),
+	time(resolve_pp(Custo, Freguesia, Peso, Veiculo, Travessia/CustoT)),
+	statistics(global_stack, [Used2, _]),
+	Mem is Used2 - Used1.
+
+% ------------------------------------------
+% Estatísticas do Algoritmo Iterative Depth Search - Memória e tempo de execução
+statisticsIDS(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
+	encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
+	estimaD(Freguesia, Distancia),
+	escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
+	statistics(global_stack, [Used1, _]),
+	time(resolve_pil(Custo, Freguesia, Peso, Veiculo, 10, Travessia/CustoT)),
+	statistics(global_stack, [Used2, _]),
+	Mem is Used2 - Used1.
+
+% ------------------------------------------
+% Estatísticas do Algoritmo Gulosa - Memória e tempo de execução
+statisticsGulosa(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
+	encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
+	estimaD(Freguesia, Distancia),
+	escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
+	statistics(global_stack, [Used1, _]),
+	time(resolve_gulosa(Custo, Freguesia, Veiculo, Peso, Travessia/CustoT)),
+	statistics(global_stack, [Used2, _]),
+	Mem is Used2 - Used1.
+
+% ------------------------------------------
+% Estatísticas do Algoritmo A* - Memória e tempo de execução
+statisticsAEstrela(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
+	encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
+	estimaD(Freguesia, Distancia),
+	escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
+	statistics(global_stack, [Used1, _]),
+	time(resolve_aestrela(Custo, Freguesia, Veiculo, Peso, Travessia/CustoT)),
+	statistics(global_stack, [Used2, _]),
+	Mem is Used2 - Used1.
+
+% ------------------------------------------
 % Obtém todos os caminhos que passam por uma certa freguesia
 % todosCaminhosTerritorio: Freguesia, CaminhosPossíveis, Solução -> {V,F}
 todosCaminhosTerritorio(_, [], []).
