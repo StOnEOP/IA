@@ -49,7 +49,8 @@ geraCircuitosSemVolta(Freguesia, L) :-
     todosCaminhosTerritorio(Freguesia, L1, L).
 
 % ------------------------------------------
-% Obtém todos os caminhos possíveis para todas as freguesias de todas as encomendas até chegar a Amares (freguesia do centro de distribuições)
+% Obtém todos os caminhos possíveis para todas as freguesias de todas as encomendas
+% até chegar a Amares (freguesia do centro de distribuições)
 % todosCaminhos: Solução
 todosCaminhos(L) :-
     findall(Freguesia, encomenda(_, _, _, _, _, Freguesia, _, _, _, _), L1),
