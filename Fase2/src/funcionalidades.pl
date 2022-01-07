@@ -6,7 +6,7 @@
 % Ficheiros a consultar
 :- consult('base_conhecimento.pl').
 :- consult('auxiliares.pl').
-%:- consult('invariantes.pl').
+:- consult('invariantes.pl').
 
 % ------------------------------------------------------------------------------------------------------------------------------
 % FUNCIONALIDADE 1: Gerar os circuitos de entrega que cubram um determinado território
@@ -19,16 +19,21 @@ geraCircuitos(Freguesia, L, Length) :-
     todosCaminhosTerritorio(Freguesia, L1, L),
     length(L, Length).
 
+
 % ------------------------------------------------------------------------------------------------------------------------------
 % FUNCIONALIDADE 2: Identificar quais os circuitos com maior número de entregas (por volume e peso)
-% Teste: circuitosComMaisEntrega(saopedromerelim, P1, P2, P3).
+% Teste-peso: circuitosComMaisEntregaPeso(vilaprado, P1, P2, P3).
+% Teste-volume: circuitosComMaisEntregaVolume(palmeira, P1, P2, P3).
 % ------------------------------------------------------------------------------------------------------------------------------
-% Identificar quais os circuitos com maior número de entregas por volume e peso
-% circuitosComMaisEntrega: Freguesia, Caminho1, Caminho2, Caminho3
+% Identificar quais os circuitos com maior número de entregas por peso
+% circuitosComMaisEntregaPeso: Freguesia, Caminho1, Caminho2, Caminho3
 circuitosComMaisEntregaPeso(Freguesia, C1, C2, C3) :-
     geraCircuitosSemVolta(Freguesia, L1),
     circuitosComMaisEntregaAUX(0, L1, C),
     sort(0, @>, C, [C1, C2, C3|_]).
+
+% Identificar quais os circuitos com maior número de entregas por volume
+% circuitosComMaisEntregaVolume: Freguesia, Caminho1, Caminho2, Caminho3
 circuitosComMaisEntregaVolume(Freguesia, C1, C2, C3) :-
     geraCircuitosSemVolta(Freguesia, L1),
     circuitosComMaisEntregaAUX(1, L1, C),
@@ -138,9 +143,10 @@ geraCircuitosI(Algoritmo, Custo, IDEncomenda, Travessia/CustoF) :-
     Algoritmo == 'aestrela' ->
         resolve_aestrela(Custo, Freguesia, Veiculo, Peso, Travessia/CustoF)).
 
+
 % ------------------------------------------------------------------------------------------------------------------------------
 % FUNCIONALIDADE 4: Escolher o circuito mais rápido usando o critério da distância
-% Teste: circuitoMaisRapido(14, Freguesia, Travessia).
+% Teste: circuitoMaisRapido(14, Freguesia, Caminho).
 % ------------------------------------------------------------------------------------------------------------------------------
 % Obter o circuito mais rápido usando o critério da distância
 % circuitoMaisRapido: IDEncomenda, Freguesia, Travessia
@@ -148,11 +154,12 @@ circuitoMaisRapido(IDEncomenda, Freguesia, Travessia) :-
     encomenda(IDEncomenda, _, _, _, _, Freguesia, _, _, _, _),
     obtemMelhor(0, Freguesia, _, _, Travessia).
 
+
 % ------------------------------------------------------------------------------------------------------------------------------
 % FUNCIONALIDADE 5: Escolher o circuito mais ecológico usando o critério do tempo
-% Teste: circuitoMaisEcologico(5, Freguesia, Peso, Veiculo, Travessia). - bicicleta
-% Teste: circuitoMaisEcologico(6, Freguesia, Peso, Veiculo, Travessia). - moto
-% Teste: circuitoMaisEcologico(13, Freguesia, Peso, Veiculo, Travessia). - carro
+% Teste-bicicleta: circuitoMaisEcologico(5, Freguesia, Peso, Veiculo, Caminho).
+% Teste-moto: circuitoMaisEcologico(6, Freguesia, Peso, Veiculo, Caminho).
+% Teste-carro: circuitoMaisEcologico(13, Freguesia, Peso, Veiculo, Caminho).
 % ------------------------------------------------------------------------------------------------------------------------------
 % Obter o circuito mais ecológico usando o critério de tempo
 % circuitoMaisEcologico: IDEncomenda, Freguesia, Peso, Veiculo, Travessia
@@ -162,10 +169,11 @@ circuitoMaisEcologico(IDEncomenda, Freguesia, Peso, Veiculo, Travessia) :-
     escolheVeiculo(Distancia, Prazo, Peso, _, Veiculo),
     obtemMelhor(1, Freguesia, Peso , Veiculo, Travessia).
 
+
 % ------------------------------------------------------------------------------------------------------------------------------
 % ESTATISTICAS - Memória e tempo de execução
 % ------------------------------------------------------------------------------------------------------------------------------
-% -- BFS, statisticsBFS(1, 3, Travessia, Memoria).
+% -- BFS, statisticsBFS(1, 3, Caminho, Memoria).
 statisticsBFS(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
 	encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
 	estimaD(Freguesia, Distancia),
@@ -175,7 +183,7 @@ statisticsBFS(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
 	statistics(global_stack, [Used2, _]),
 	Mem is Used2 - Used1.
 
-% -- DFS, statisticsDFS(1, 3, Travessia, Memoria).
+% -- DFS, statisticsDFS(1, 3, Caminho, Memoria).
 statisticsDFS(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
 	encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
 	estimaD(Freguesia, Distancia),
@@ -185,7 +193,7 @@ statisticsDFS(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
 	statistics(global_stack, [Used2, _]),
 	Mem is Used2 - Used1.
 
-% -- IDS, statisticsIDS(1, 3, Travessia, Memoria).
+% -- IDS, statisticsIDS(1, 3, Caminho, Memoria).
 statisticsIDS(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
 	encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
 	estimaD(Freguesia, Distancia),
@@ -195,7 +203,7 @@ statisticsIDS(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
 	statistics(global_stack, [Used2, _]),
 	Mem is Used2 - Used1.
 
-% -- GULOSA, statisticsGulosa(1, 3, Travessia, Memoria).
+% -- GULOSA, statisticsGulosa(1, 3, Caminho, Memoria).
 statisticsGulosa(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
 	encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
 	estimaD(Freguesia, Distancia),
@@ -205,7 +213,7 @@ statisticsGulosa(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
 	statistics(global_stack, [Used2, _]),
 	Mem is Used2 - Used1.
 
-% -- AESTRELA, statisticsAEstrela(1, 3, Travessia, Memoria).
+% -- AESTRELA, statisticsAEstrela(1, 3, Caminho, Memoria).
 statisticsAEstrela(Custo, IDEncomenda, Travessia/CustoT, Mem) :-
 	encomenda(IDEncomenda, _, _, Peso, _, Freguesia, _, _, Prazo, _),
 	estimaD(Freguesia, Distancia),
