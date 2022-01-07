@@ -32,12 +32,11 @@
 % Prazo de entrega: imediato = 0 , 2h = 2, 6h = 6, 1 dia = 1, 3 dias = 3, 7 dias = 7.
 % Classificação da entrega: 0 a 5.
 % Preço: calculado através de peso, volume, transporte utilizado (menos ecológico = mais caro) e o prazo de entrega (mais curto = mais caro).
-+encomenda(IDEncomenda,IDCliente,IDEstafeta,Peso,Volume,Rua,Freguesia,DataPedido,DataEntrega,Prazo,Classificacao) ::    (integer(IDEncomenda)
++encomenda(IDEncomenda,IDCliente,IDEstafeta,Peso,Volume,Freguesia,DataPedido,DataEntrega,Prazo,Classificacao) ::    (integer(IDEncomenda)
                                                                                                                         ,integer(IDCliente)
                                                                                                                         ,integer(IDEstafeta)
                                                                                                                         ,integer(Peso)
                                                                                                                         ,integer(Volume)
-                                                                                                                        ,atom(Rua)
                                                                                                                         ,atom(Freguesia)
                                                                                                                         ,validaData(DataPedido)
                                                                                                                         ,validaData(DataEntrega)

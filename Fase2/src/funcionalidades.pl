@@ -25,41 +25,53 @@ geraCircuitos(Freguesia, L, Length) :-
 % ------------------------------------------------------------------------------------------------------------------------------
 % Identificar quais os circuitos com maior número de entregas por volume e peso
 % circuitosComMaisEntrega: Freguesia, Caminho1, Caminho2, Caminho3
-circuitosComMaisEntrega(Freguesia, C1, C2, C3) :-
+circuitosComMaisEntregaPeso(Freguesia, C1, C2, C3) :-
     geraCircuitosSemVolta(Freguesia, L1),
-    circuitosComMaisEntregaAUX(L1, C),
+    circuitosComMaisEntregaAUX(0, L1, C),
+    sort(0, @>, C, [C1, C2, C3|_]).
+circuitosComMaisEntregaVolume(Freguesia, C1, C2, C3) :-
+    geraCircuitosSemVolta(Freguesia, L1),
+    circuitosComMaisEntregaAUX(1, L1, C),
     sort(0, @>, C, [C1, C2, C3|_]).
 
-circuitosComMaisEntregaAUX([], []).
-circuitosComMaisEntregaAUX([Caminho], [(Max,Caminho3)]) :- 
-    contaPesoVolumeCaminho(Caminho, Max),
+% Variável 'Opcao': 0 -> Peso ; 1 -> Volume
+circuitosComMaisEntregaAUX(_, [], []).
+circuitosComMaisEntregaAUX(Opcao, [Caminho], [(Max,Caminho3)]) :- 
+    contaPesoVolumeCaminho(Opcao, Caminho, Max),
     reverse(Caminho, Caminho1),
     apagaPrimeiro(Caminho, Caminho2),
     append(Caminho1, Caminho2, Caminho3). 
-circuitosComMaisEntregaAUX([Caminho|T], L) :-
-        contaPesoVolumeCaminho(Caminho, Count),
-        circuitosComMaisEntregaAUX(T, Ls),
+circuitosComMaisEntregaAUX(Opcao, [Caminho|T], L) :-
+        contaPesoVolumeCaminho(Opcao, Caminho, Count),
+        circuitosComMaisEntregaAUX(Opcao, T, Ls),
         reverse(Caminho, Caminho1),
         apagaPrimeiro(Caminho, Caminho2),
         append(Caminho1, Caminho2, Caminho3), 
         append([(Count, Caminho3)], Ls, L).
 
 % ------------------------------------------
-% Calcula o Volume + Peso de um caminho
+% Calcula o Volume ou Peso de um caminho
+% Variável 'Opcao': 0 -> Peso ; 1 -> Volume
 % contaPesoVolumeCaminho: Caminho, CálculoFinal
-contaPesoVolumeCaminho([], 0).
-contaPesoVolumeCaminho([Freguesia], Max) :- contaPesoVolume(Freguesia, Max).
-contaPesoVolumeCaminho([Freguesia|T], Max) :-
-    contaPesoVolume(Freguesia, Max1),
-    contaPesoVolumeCaminho(T, Max2),
+contaPesoVolumeCaminho(_, [], 0).
+contaPesoVolumeCaminho(Opcao, [Freguesia], Max) :- contaPesoVolume(Opcao, Freguesia, Max).
+contaPesoVolumeCaminho(Opcao, [Freguesia|T], Max) :-
+    contaPesoVolume(Opcao, Freguesia, Max1),
+    contaPesoVolumeCaminho(Opcao, T, Max2),
     Max is Max1 + Max2.
 
 % ------------------------------------------
-% Soma o peso e volume de todas as encomendas de uma Freguesia
+% Soma o peso ou volume de todas as encomendas de uma Freguesia
+% Variável 'Opcao': 0 -> Peso ; 1 -> Volume
 % contaPesoVolume: Freguesia, Soma
-contaPesoVolume(Freguesia, Sum) :-
-    findall(Total, (encomenda(_,_,_, Peso, Volume, Freguesia, _,_,_,_), Total is Peso + Volume), L),
-    sum_list(L, Sum).
+contaPesoVolume(Opcao, Freguesia, Sum) :-
+    (Opcao == 0 -> 
+        findall(Peso, (encomenda(_,_,_, Peso, _, Freguesia, _,_,_,_)), L),
+        sum_list(L, Sum);
+    Opcao == 1 ->
+        findall(Volume, (encomenda(_,_,_, _, Volume, Freguesia, _,_,_,_)), L),
+        sum_list(L, Sum)).
+
 
 % ------------------------------------------------------------------------------------------------------------------------------
 % FUNCIONALIDADE 3: Comparar circuitos de entrega tendo em conta os indicadores de produtividade
