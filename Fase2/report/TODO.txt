@@ -1,9 +1,0 @@
-1. Começar métodos necessários (funcionalidades)
-        1.3. Identificar quais são os circuitos com maior número de entregas.
-        1.4. Escolher o mais rápido e o mais ecológico.
-        
-2. Talvez mudar o Prazo imediato para 15min
-
-Informações:
-        -> Ordenado por importância (número menor = mais importante)
-        -> Apagar alíneas acima sempre que completadas
